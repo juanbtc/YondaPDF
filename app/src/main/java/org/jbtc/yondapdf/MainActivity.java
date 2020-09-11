@@ -1,19 +1,46 @@
 package org.jbtc.yondapdf;
 
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
+import android.net.Uri;
 import android.os.Bundle;
 
+import com.github.barteksc.pdfviewer.PDFView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
+import androidx.navigation.ui.NavigationUI;
+import androidx.room.Room;
 
+import android.os.Environment;
+import android.util.Log;
 import android.view.View;
 
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
+
+import org.jbtc.yondapdf.database.RoomDatabaseBooksLN;
+import org.jbtc.yondapdf.entidad.Book;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final String PRIMARY = "primary";
+    private static final String dbName = "bookslightnovel";
+
+    NavController navController;
+    AssetManager assetManager;
+    RoomDatabaseBooksLN rdb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,14 +49,19 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+        //NavigationView navigationView = findViewById(R.id.nav_view);
+        navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        //NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
+        //NavigationUI.setupWithNavController(navigationView, navController);
+
+
+        rdb = Room.databaseBuilder(getApplicationContext(),
+                RoomDatabaseBooksLN.class, dbName)
+                .allowMainThreadQueries()
+                .enableMultiInstanceInvalidation()
+                .build();
+
+
     }
 
     @Override
@@ -53,4 +85,28 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        setup();
+    }
+
+    private void setup() {
+        // Enable Android-style asset loading (highly recommended)
+        PDFBoxResourceLoader.init(getApplicationContext());
+        // Find the root of the external storage.
+        //root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        assetManager = getAssets();
+        // Need to ask for write permissions on SDK 23 and up, this is ignored on older versions
+        if (ContextCompat.checkSelfPermission(MainActivity.this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+        {
+
+            ActivityCompat.requestPermissions(MainActivity.this,new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+        }
+    }
+
 }
