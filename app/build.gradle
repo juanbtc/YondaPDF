@@ -35,6 +35,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'com.google.android.material:material:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.1'
+    //implementation 'androidx.constraintlayout:constraintlayout:2.0.0-beta1'
     implementation 'androidx.navigation:navigation-fragment:2.3.0'
     implementation 'androidx.navigation:navigation-ui:2.3.0'
 
@@ -53,6 +54,7 @@ dependencies {
     // explicitly depend on RxJava's latest version for bug fixes and new features.
     // (see https://github.com/ReactiveX/RxJava/releases for latest 3.x.x version)
     implementation 'io.reactivex.rxjava3:rxjava:3.0.0'
+
 
 
     implementation 'com.android.support:multidex:1.0.3'

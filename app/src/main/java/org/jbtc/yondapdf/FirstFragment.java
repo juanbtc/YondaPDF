@@ -3,6 +3,7 @@ package org.jbtc.yondapdf;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.renderscript.ScriptGroup;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,12 +16,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
 
 import org.jbtc.yondapdf.adapter.AdapterBook;
 import org.jbtc.yondapdf.database.RoomDatabaseBooksLN;
 import org.jbtc.yondapdf.databinding.FragmentFirstBinding;
 import org.jbtc.yondapdf.entidad.Book;
 
+import java.io.InputStream;
 import java.util.List;
 
 public class FirstFragment extends Fragment {
@@ -113,7 +116,21 @@ public class FirstFragment extends Fragment {
         if (requestCode == 1 && resultCode == getActivity().RESULT_OK) {
             if (resultData != null) {
                 Uri uri = resultData.getData();
-                Book b = new Book(uri.toString(),uri.getLastPathSegment(),-1);
+                int pages=0;
+                try {
+                    InputStream i = getContext().getContentResolver().openInputStream(uri);
+                    PDDocument pdf = PDDocument.load(i);
+                    pages = pdf.getNumberOfPages();
+                }catch (Exception e){e.printStackTrace();}
+                String name = uri.getLastPathSegment();
+                if(name.contains(":")){
+                    String [] nm = name.split(":");
+                    name = nm[nm.length-1];
+                }if(name.contains("/")){
+                    String [] nm = name.split("/");
+                    name = nm[nm.length-1];
+                }
+                Book b = new Book(uri.toString(),name,0,pages);
                 rdb.bookDAO().insertBook(b);
                 mAdapter.updateList(rdb.bookDAO().getAll());
                 //mAdapter.notifyDataSetChanged();

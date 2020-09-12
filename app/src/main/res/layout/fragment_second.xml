@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="#9FE4ED"
     android:scrollbars="vertical"
     tools:context=".SecondFragment">
 
@@ -14,51 +15,55 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:background="#9FE4ED" />
+        android:background="#9FE4ED"
+        app:layout_constrainttop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="1dp"
+        android:layout_height="40dp"
         android:background="@drawable/bg_menu_play_control"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@id/pdfView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
         <TextView
             android:id="@+id/tv_bookpdf_page"
             android:text="1"
-            android:textSize="23sp"
+            android:textSize="19sp"
             android:gravity="center"
-            android:layout_width="80dp"
-            android:layout_height="50dp"/>
-
+            android:layout_width="60dp"
+            android:layout_height="40dp"/>
         <Button
             android:id="@+id/bt_sec_prev"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:layout_gravity="center_horizontal"
             android:background="@drawable/ic_skip_previous_black_18dp" />
         <Button
             android:id="@+id/bt_sec_play"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:layout_gravity="center_horizontal"
             android:background="@drawable/ic_play_circle_filled_black_18dp" />
         <Button
             android:id="@+id/bt_sec_pause"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:layout_gravity="center_horizontal"
             android:background="@drawable/ic_pause_circle_filled_black_18dp" />
         <Button
             android:id="@+id/bt_sec_stop"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:layout_gravity="center_horizontal"
             android:background="@drawable/ic_stop_circle_black_18dp" />
         <Button
             android:id="@+id/bt_sec_next"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:layout_gravity="center_horizontal"
             android:background="@drawable/ic_skip_next_black_18dp" />
     </LinearLayout>
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

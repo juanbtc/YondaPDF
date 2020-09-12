@@ -42,23 +42,25 @@ import org.jbtc.yondapdf.entidad.Book;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.EnumSet;
 import java.util.Locale;
 
-public class SecondFragment extends Fragment implements View.OnClickListener {
+public class SecondFragment extends Fragment {
     private static final String PRIMARY = "primary";
     private static final String LOCAL_STORAGE = "/storage/emulated/0/";
     private static final String EXT_STORAGE = "/storage/7764-A034/";
     private static final String COLON = ":";
 
-    private View view;
     private static final String TAG = "nHomef";
     private static final String dbName = "bookslightnovel";
     private TextToSpeech textToSpeech;
     private FragmentSecondBinding binding;
     private RoomDatabaseBooksLN rdb;
-    //private PDFView pdf;
     private Book book;
     private Uri uri;
+    enum StadoSpeak {playin,end,stoped}
+    StadoSpeak stadoSpeak =StadoSpeak.end;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState ) {
@@ -71,25 +73,23 @@ public class SecondFragment extends Fragment implements View.OnClickListener {
                 .enableMultiInstanceInvalidation()
                 .build();
 
-        Log.i(TAG, "onCreateView: bundle id: "+getArguments().getInt("id"));
         book = rdb.bookDAO().getBookById(getArguments().getInt("id"));
-        Log.i(TAG, "onCreateView: id: "+book.getId());
         uri = Uri.parse(book.getUri());
 
         textToSpeech  =new TextToSpeech(getContext(),new TextToSpeech.OnInitListener(){
             @Override
             protected void finalize() throws Throwable {
                 super.finalize();
-                Log.i(TAG +" ini ","Finalizo cargar pdf");
+                Log.i(TAG +"ini ","Finalizo cargar pdf");
             }
 
             @Override
             public void onInit(int i) {
-                Log.i(TAG +" ini ","i = "+i);
+                Log.i(TAG +"ini ","i = "+i);
                 textToSpeech.setLanguage(Locale.getDefault());
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     Log.i(TAG, "onInit: "+textToSpeech.getVoices().toString());
-                }
+                }*/
             }
         } );
 
@@ -97,12 +97,14 @@ public class SecondFragment extends Fragment implements View.OnClickListener {
             @Override
             public void onStart(String s) {
                 Log.i(TAG +" ini ","Start");
+                stadoSpeak=StadoSpeak.playin;
             }
 
             @Override
             public void onDone(String s) {
-                //if(s.equals("id"))Log.i("T_utt_compl" ,"yes id");
-                Log.i(TAG +" ini ","done");
+                if (stadoSpeak!=StadoSpeak.stoped) {
+                    next();
+                }
             }
 
             @Override
@@ -112,59 +114,28 @@ public class SecondFragment extends Fragment implements View.OnClickListener {
         });
 
 
-        //pdf = view.findViewById(R.id.pdfView);
         setup();
-        binding.pdfView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                int pa=binding.pdfView.getCurrentPage();
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                    PdfDocument p = new PdfDocument();
-                }
-                PDDocument document = new PDDocument();
-                //PDFTextStripper sd;
-                //com.shockwave.pdfium.PdfDocument a = new com.shockwave.pdfium.PdfDocument();
 
-                //String txt= stripText(getPdfTmpPath(uri),pa);
-                File f=null;
-                String p="";
-                try {
-                    //p=UtilsURI.getPathFromUri(getContext(),uri);
-                    //p="/storage/C43E-1DE8/ExtractedApks/07-Re Zero Volumen - 05.pdf";
-                    //p=getRealPathFromURI(getContext(),uri);
+        setupControlPlayer();
 
-                    Log.i(TAG, "onClick: utils "+p);
-                    f = new File(p);
-                    InputStream i = getContext().getContentResolver().openInputStream(uri);
-                    //File g = new File(new URI(uri.getPath()));
-                    Log.i(TAG, "onClick: pa: "+pa);
-                    String txt= stripText(i,pa+1);
-                    Log.i(TAG, "onClick: texto : "+txt);
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        textToSpeech.speak(txt,TextToSpeech.QUEUE_FLUSH,null,"id");
-                        //textToSpeech.
-                    }
-                }catch (Exception e){e.printStackTrace();}
-                Log.i(TAG, "onClick: "+f.getAbsolutePath());
-                //Toast.makeText(getContext(),"page: "+pa,Toast.LENGTH_LONG).show();
-            }
-        });
-        view = binding.getRoot();
+        View view = binding.getRoot();
         return view;
     }
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-
-        //pdf.fitToWidth();
-        //pdf.setMinimumWidth(0);
+        ((MainActivity)getActivity()).getSupportActionBar().setTitle(book.getTitulo());
         binding.pdfView.fromUri(uri)
                 .spacing(10)
+                .defaultPage(book.getPageTag()-1)
                 .onTap(new OnTapListener() {
                     @Override
                     public boolean onTap(MotionEvent e) {
-                        return false;
+                        book.setPageTag(binding.pdfView.getCurrentPage()+1);
+                        rdb.bookDAO().updateBook(book);
+                        speakBook(book.getPageTag());
+                        return true;
                     }
                 })
                 .onPageChange(new OnPageChangeListener() {
@@ -174,102 +145,87 @@ public class SecondFragment extends Fragment implements View.OnClickListener {
                     }
                 })
                 .load();
+    }
 
+    private void setupControlPlayer() {
+        binding.btSecPrev.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                prev();
+            }
+        });
         binding.btSecPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //NavHostFragment.findNavController(SecondFragment.this).navigate(R.id.action_SecondFragment_to_FirstFragment);
-                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                intent.setType("*/*");
-                startActivityForResult(intent, 1);
+                speakBook(book.getPageTag());
             }
         });
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
-        super.onActivityResult(requestCode, resultCode, resultData);
-        if (requestCode == 1 && resultCode == getActivity().RESULT_OK) {
-            if (resultData != null) {
-                final Uri uri = resultData.getData();
-                //Toast.makeText(this, uri.getPath(), Toast.LENGTH_SHORT).show();
-                Log.i(TAG, "my uri: "+uri.getPath());
-
-                //readPdfFile(uri);
-                Toast.makeText(getActivity(),"asdasf",Toast.LENGTH_LONG).show();
-                //NavHostFragment.findNavController()  .navigate(R.id.action_FirstFragment_to_SecondFragment);
-                //navController.navigate(R.id.SecondFragment);
-
-                String fullPath;
-                //convert from uri to full path
-                if(uri.getPath().contains("primary")) {
-                    fullPath = LOCAL_STORAGE + uri.getPath().split(COLON)[1];
-                }
-                else {
-                    fullPath = EXT_STORAGE + uri.getPath().split(COLON)[1];
-                }
-
-                final PDFView pdf=view.findViewById(R.id.pdfView);
-                pdf.fitToWidth();
-                pdf.setMinimumWidth(0);
-                pdf.fromUri(uri)
-                        //.spacing(10)
-                        .onTap(new OnTapListener() {
-                            @Override
-                            public boolean onTap(MotionEvent e) {
-                                return false;
-                            }
-                        })
-                        .onPageChange(new OnPageChangeListener() {
-                            @Override
-                            public void onPageChanged(int page, int pageCount) {
-                                //Toast.makeText(getContext(),""+page,Toast.LENGTH_LONG).show();
-                            }
-                        })
-                        .load();
-                //pdf.fitToWidth();
-                //getPdfTmpPath(uri);
-                String fullFilePath="";
-                try {
-                    fullFilePath=Util2A.getPath(getContext(), uri);
-                }catch (Exception e){}
-
-                Log.i(TAG, "onClick: "+fullFilePath);
-                //File s = new File(uri.getPath());
-                //Log.i(tag, "here onActivityResult: "+s.getAbsolutePath());
-
-                final String finalFullFilePath = fullFilePath;
-
-
+        binding.btSecPause.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                stopSpeak();
             }
-        }
+        });
+        binding.btSecStop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                stopSpeak();
+            }
+        });
+        binding.btSecNext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                next();
+            }
+        });
+
     }
 
-    public String stripText(InputStream  pathPDF,int page) {
-        String parsedText = null;
+    public void next(){
+        book.incPageTag1();
+        //todo:validar in<pages
+        rdb.bookDAO().updateBook(book);
+        speakBook(book.getPageTag());
+        Log.i(TAG +" ini ","done");
+    }
+
+    public void prev(){
+        book.decPageTag1();
+        //todo:validar in<pages
+        rdb.bookDAO().updateBook(book);
+        speakBook(book.getPageTag());
+        Log.i(TAG +" ini ","done");
+    }
+
+    private void speakBook(int numPage){
+        Log.i(TAG, "speakBook: num: "+numPage);
+        try {
+            if(textToSpeech.isSpeaking()){
+                stopSpeak();
+            }
+            InputStream i = getContext().getContentResolver().openInputStream(uri);
+            String txt= stripText(i,numPage);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                textToSpeech.speak(txt,TextToSpeech.QUEUE_FLUSH,null,String.valueOf(numPage));
+                stadoSpeak=StadoSpeak.playin;
+            }
+        }catch (Exception e){e.printStackTrace();}
+    }
+
+    public String stripText(InputStream  pdfInputStream,int page) {
+        String textParsed = "";
         PDDocument document = null;
         try {
-            //document = PDDocument.load(assetManager.open(PathPDF));
-            //document = PDDocument.load(assetManager.open("/sdcard/07-Re Zero Volumen - 05.pdf"));
-            //document = PDDocument.load(assetManager.open("/storage/self/primary/07-Re Zero Volumen - 05.pdf"));
-
-            document = PDDocument.load(pathPDF);
+            document = PDDocument.load(pdfInputStream);
             PDFRenderer pdfRender=new PDFRenderer(document);
-            Bitmap image = pdfRender.renderImage(0);
-        } catch(IOException e) {
-            //Log.e("PdfBox-Android-Sample", "Exception thrown while loading document to strip", e);
-            e.printStackTrace();
-        }
+            //Bitmap image = pdfRender.renderImage(0);
 
-        try {
             PDFTextStripper pdfStripper = new PDFTextStripper();
             pdfStripper.setStartPage(page);
             pdfStripper.setEndPage(page);
-            parsedText = "Parsed text: " + pdfStripper.getText(document);
+            textParsed =  pdfStripper.getText(document);
         }
-        catch (IOException e)
-        {
-            //Log.e("PdfBox-Android-Sample", "Exception thrown while stripping text", e);
+        catch (IOException e) {
             e.printStackTrace();
         } finally {
             try {
@@ -280,14 +236,16 @@ public class SecondFragment extends Fragment implements View.OnClickListener {
                 Log.e("PdfBox-Android-Sample", "Exception thrown while closing document", e);
             }
         }
-        return parsedText;
+        return textParsed;
+    }
+
+    public void stopSpeak(){
+        stadoSpeak=StadoSpeak.stoped;
+        textToSpeech.stop();
     }
 
     private void setup() {
-        // Enable Android-style asset loading (highly recommended)
         PDFBoxResourceLoader.init(getContext());
-        // Find the root of the external storage.
-        //root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         // Need to ask for write permissions on SDK 23 and up, this is ignored on older versions
         if (ContextCompat.checkSelfPermission(getContext(),
                 Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
@@ -295,11 +253,6 @@ public class SecondFragment extends Fragment implements View.OnClickListener {
 
             ActivityCompat.requestPermissions(getActivity(),new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
         }
-    }
-
-    @Override
-    public void onClick(View view) {
-
     }
 
     @Override
