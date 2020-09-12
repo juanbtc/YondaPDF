@@ -3,6 +3,7 @@ package org.jbtc.yondapdf;
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.RestrictionEntry;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
@@ -15,12 +16,15 @@ import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -118,6 +122,7 @@ public class SecondFragment extends Fragment {
 
         setupControlPlayer();
 
+        setHasOptionsMenu(true);
         View view = binding.getRoot();
         return view;
     }
@@ -125,7 +130,8 @@ public class SecondFragment extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        ((MainActivity)getActivity()).getSupportActionBar().setTitle(book.getTitulo());
+        getActionBarFromMainActivity().setTitle(book.getTitulo());
+
         binding.pdfView.fromUri(uri)
                 .spacing(10)
                 .defaultPage(book.getPageTag()-1)
@@ -145,6 +151,25 @@ public class SecondFragment extends Fragment {
                     }
                 })
                 .load();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        //inflater.inflate(R.menu.menu_main, menu);
+        //menu.findItem(R.id.action_botspeak).setVisible(false);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(@NonNull Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        menu.findItem(R.id.action_botspeak).setVisible(false);
+    }
+
+    private ActionBar getActionBarFromMainActivity() {
+        if(getActivity() instanceof MainActivity){
+            return ((MainActivity)getActivity()).getSupportActionBar();
+        }else{return null;}
     }
 
     private void setupControlPlayer() {

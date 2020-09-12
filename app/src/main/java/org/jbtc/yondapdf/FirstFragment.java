@@ -5,10 +5,13 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.renderscript.ScriptGroup;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -62,7 +65,11 @@ public class FirstFragment extends Fragment {
             }
         });
 
+        getActionBarFromMainActivity().setTitle(getResources().getString(R.string.app_name));
+        //getActionBarFromMainActivity().;
+
         setupRecycler();
+
         return view;
     }
 
@@ -139,4 +146,18 @@ public class FirstFragment extends Fragment {
         }
     }
 
+    private ActionBar getActionBarFromMainActivity() {
+        if(getActivity() instanceof MainActivity){
+            return ((MainActivity)getActivity()).getSupportActionBar();
+        }else{return null;}
+    }
+
+    /*
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        menu.findItem(R.id.action_botspeak).setVisible(false);
+        inflater.inflate(R.menu.menu_main, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+    */
 }
