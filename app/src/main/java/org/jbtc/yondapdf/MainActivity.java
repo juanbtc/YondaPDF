@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -24,14 +25,18 @@ import androidx.room.Room;
 
 import android.os.Environment;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
 
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.jbtc.yondapdf.database.RoomDatabaseBooksLN;
+import org.jbtc.yondapdf.databinding.ActivityMainBinding;
 import org.jbtc.yondapdf.entidad.Book;
+import org.spongycastle.asn1.x509.AlgorithmIdentifier;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -41,11 +46,13 @@ public class MainActivity extends AppCompatActivity {
     NavController navController;
     AssetManager assetManager;
     RoomDatabaseBooksLN rdb;
+    ActivityMainBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -61,7 +68,6 @@ public class MainActivity extends AppCompatActivity {
                 .enableMultiInstanceInvalidation()
                 .build();
 
-
     }
 
 
@@ -70,8 +76,10 @@ public class MainActivity extends AppCompatActivity {
         //Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         //menu.findItem(R.id.action_botspeak).setVisible(false);
+        Log.i("as21", "onCreateOptionsMenu: paso por menu del mainactivity");
         return true;
     }
+
 
 
 
@@ -88,6 +96,12 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void setTextSizeToolbar(float sp){
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        //((TextView)toolbar.getChildAt(0)).setTypeface(typeFace);
+        ((TextView) toolbar.getChildAt(0)).setTextSize(TypedValue.COMPLEX_UNIT_PX,sp);
     }
 
 
@@ -111,6 +125,10 @@ public class MainActivity extends AppCompatActivity {
 
             ActivityCompat.requestPermissions(MainActivity.this,new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
         }
+    }
+
+    public ActivityMainBinding getActivityMainBinding(){
+        return binding;
     }
 
 }

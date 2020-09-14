@@ -1,8 +1,12 @@
 package org.jbtc.yondapdf.adapter;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -29,8 +33,10 @@ public class AdapterBook extends RecyclerView.Adapter<AdapterBook.ViewHolderBook
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolderBook holder, final int position) {
-        holder.tvTitle.setText(items.get(position).getTitulo());
-        holder.tvPath.setText(items.get(position).getUri());
+        holder.tvName.setText(items.get(position).getTitulo());
+        holder.tvPages.setText(String.valueOf(items.get(position).getPages()));
+        holder.tvTag.setText(String.valueOf(items.get(position).getPageTag()));
+        holder.ivBitmap.setImageBitmap(base64ToBitmap(items.get(position).getBitmap()));
         holder.v.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -54,15 +60,24 @@ public class AdapterBook extends RecyclerView.Adapter<AdapterBook.ViewHolderBook
     // you provide access to all the views for a data item in a view holder
     public class ViewHolderBook extends RecyclerView.ViewHolder {
         // each data item is just a string in this case
-        public TextView tvTitle;
-        public TextView tvPath;
+        private TextView tvName;
+        private TextView tvPages;
+        private TextView tvTag;
+        private ImageView ivBitmap;
         View v;
         public ViewHolderBook(View v) {
             super(v);
-            tvTitle = v.findViewById(R.id.tv_book_title);
-            tvPath = v.findViewById(R.id.tv_book_path);
+            tvName = v.findViewById(R.id.tv_book_name);
+            tvPages = v.findViewById(R.id.tv_book_pages);
+            tvTag = v.findViewById(R.id.tv_book_tag);
+            ivBitmap= v.findViewById(R.id.iv_card_page1);
             this.v=v;
         }
+    }
+
+    private Bitmap base64ToBitmap(String base64){
+        byte[] bytarray = Base64.decode(base64, Base64.DEFAULT);
+        return BitmapFactory.decodeByteArray(bytarray, 0, bytarray.length);
     }
 
     public interface OnClickCardViewListener{

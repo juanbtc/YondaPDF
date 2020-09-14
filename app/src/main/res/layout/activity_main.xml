@@ -11,15 +11,27 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:theme="@style/AppTheme.AppBarOverlay">
-
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_marginHorizontal="10dp"
-            android:background="?attr/colorPrimary"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_weight="1"
+                android:background="?attr/colorPrimary"
+                android:layout_width="0dp"
+                android:layout_height="?attr/actionBarSize"
+                app:popupTheme="@style/AppTheme.PopupOverlay" />
+            <Button
+                android:id="@+id/bt_appbar_botpage"
+                android:layout_width="?attr/actionBarSize"
+                android:layout_height="?attr/actionBarSize"
+                android:paddingTop="23dp"
+                android:background="@drawable/ic_botspeak___master"
+                android:textColor="#000000"
+                android:textSize="10sp"
+                android:text="654321"/>
+        </LinearLayout>
 <!--        android:background="?attr/colorPrimary"-->
     </com.google.android.material.appbar.AppBarLayout>
 

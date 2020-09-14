@@ -1,9 +1,12 @@
 package org.jbtc.yondapdf;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.renderscript.ScriptGroup;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,12 +23,14 @@ import androidx.room.Room;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.rendering.PDFRenderer;
 
 import org.jbtc.yondapdf.adapter.AdapterBook;
 import org.jbtc.yondapdf.database.RoomDatabaseBooksLN;
 import org.jbtc.yondapdf.databinding.FragmentFirstBinding;
 import org.jbtc.yondapdf.entidad.Book;
 
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.List;
 
@@ -69,6 +74,10 @@ public class FirstFragment extends Fragment {
         //getActionBarFromMainActivity().;
 
         setupRecycler();
+
+        getMainActivity().setTextSizeToolbar(30f);
+
+        getMainActivity().getActivityMainBinding().btAppbarBotpage.setVisibility(View.GONE);
 
         return view;
     }
@@ -124,10 +133,13 @@ public class FirstFragment extends Fragment {
             if (resultData != null) {
                 Uri uri = resultData.getData();
                 int pages=0;
+                String bitmap="";
                 try {
                     InputStream i = getContext().getContentResolver().openInputStream(uri);
                     PDDocument pdf = PDDocument.load(i);
                     pages = pdf.getNumberOfPages();
+                    PDFRenderer renderer = new PDFRenderer(pdf);
+                    bitmap = bitmapToBase64(renderer.renderImage(0));
                 }catch (Exception e){e.printStackTrace();}
                 String name = uri.getLastPathSegment();
                 if(name.contains(":")){
@@ -137,7 +149,7 @@ public class FirstFragment extends Fragment {
                     String [] nm = name.split("/");
                     name = nm[nm.length-1];
                 }
-                Book b = new Book(uri.toString(),name,0,pages);
+                Book b = new Book(uri.toString(),name,0,pages,bitmap);
                 rdb.bookDAO().insertBook(b);
                 mAdapter.updateList(rdb.bookDAO().getAll());
                 //mAdapter.notifyDataSetChanged();
@@ -151,6 +163,20 @@ public class FirstFragment extends Fragment {
             return ((MainActivity)getActivity()).getSupportActionBar();
         }else{return null;}
     }
+
+    private MainActivity getMainActivity(){
+        if(getActivity() instanceof MainActivity)
+            return ((MainActivity)getActivity());
+        else return null;
+    }
+
+    private String bitmapToBase64(Bitmap bmp){
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.PNG, 10, baos);
+        byte[] b = baos.toByteArray();
+        return Base64.encodeToString(b, Base64.DEFAULT);
+    }
+
 
     /*
     @Override

@@ -19,20 +19,32 @@ public class Book {
     @ColumnInfo(name = "pages")
     int pages;
 
-    public Book(String uri, String titulo, int pageTag, int pages) {
+    String bitmap;
+
+    public Book(String uri, String titulo, int pageTag, int pages, String bitmap) {
         this.uri = uri;
         this.titulo = titulo;
         this.pageTag = pageTag;
         this.pages = pages;
+        this.bitmap = bitmap;
     }
 
     @Ignore
-    public Book(int id, String uri, String titulo, int pageTag, int pages) {
+    public Book(int id, String uri, String titulo, int pageTag, int pages, String bitmap) {
         this.id = id;
         this.uri = uri;
         this.titulo = titulo;
         this.pageTag = pageTag;
         this.pages = pages;
+        this.bitmap = bitmap;
+    }
+
+    public String getBitmap() {
+        return bitmap;
+    }
+
+    public void setBitmap(String bitmap) {
+        this.bitmap = bitmap;
     }
 
     public int getPages() {
