@@ -75,7 +75,9 @@ public class SecondFragment extends Fragment {
     private StadoSpeak stadoSpeak =StadoSpeak.end;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState ) {
+    public View onCreateView(LayoutInflater inflater,
+                             ViewGroup container,
+                             Bundle savedInstanceState ) {
         // Inflate the layout for this fragment
         binding = FragmentSecondBinding.inflate(inflater, container, false);
 
@@ -85,7 +87,8 @@ public class SecondFragment extends Fragment {
                 .enableMultiInstanceInvalidation()
                 .build();
 
-        book = rdb.bookDAO().getBookById(getArguments().getInt("id"));
+        int id = getArguments().getInt("id");
+        book = rdb.bookDAO().getBookById(id);
         uri = Uri.parse(book.getUri());
 
         textToSpeech  =new TextToSpeech(getContext(),new TextToSpeech.OnInitListener(){
@@ -136,10 +139,8 @@ public class SecondFragment extends Fragment {
         setup();
 
         setupControlPlayer();
-
-        setupForeground();
-
-        setupObserves();
+        //ServiceTTS.getState();
+        setupForeground(id);
 
         //getActivity().invalidateOptionsMenu();
         setHasOptionsMenu(true);
@@ -150,42 +151,16 @@ public class SecondFragment extends Fragment {
         return view;
     }
 
-    private void setupForeground() {
+    private void setupForeground(int id) {
         //String input = "input";
         Intent serviceIntent = new Intent(getContext(), ServiceTTS.class);
-        //serviceIntent.putExtra("inputExtra", input);
+        serviceIntent.setAction(Utils.ACTION_START);
+        serviceIntent.putExtra("id", id);
         ContextCompat.startForegroundService(getContext(), serviceIntent);
     }
 
-
-    private void setupObserves() {
-        //Observable<String> listObservable = Observable.just();
-        Observer observer = new Observer<String>() {
-            @Override
-            public void onSubscribe(@io.reactivex.rxjava3.annotations.NonNull Disposable d) {
-
-            }
-
-            @Override
-            public void onNext(String s) {
-
-            }
-
-            @Override
-            public void onError(@io.reactivex.rxjava3.annotations.NonNull Throwable e) {
-
-            }
-
-            @Override
-            public void onComplete() {
-
-            }
-        };
-    }
-
-
-
-    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view,
+                              Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         getActionBarFromMainActivity().setTitle(book.getTitulo());
@@ -363,19 +338,5 @@ public class SecondFragment extends Fragment {
         //disposable.dispose();
 
     }
-
-
-
-    public Observable  cer(){
-        CompositeDisposable ds;
-        Disposable dsa;
-        return Observable.create(new ObservableOnSubscribe<String>() {
-            @Override
-            public void subscribe(@io.reactivex.rxjava3.annotations.NonNull ObservableEmitter<String> emitter) throws Throwable {
-
-            }
-        });
-    }
-
 
 }
