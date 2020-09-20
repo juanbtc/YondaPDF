@@ -45,9 +45,9 @@ public class ServiceTTS extends Service implements TextToSpeech.OnInitListener {
     private RoomDatabaseBooksLN rdb;
     private Book book;
     private Uri uri;
-    private enum StadoSpeak {playin,end,stoped}
-    private StadoSpeak stadoSpeak = StadoSpeak.end;
-    private int stateSpeak = Utils.STATE_NOT_INIT;
+    //private enum StadoSpeak {playin,end,stoped}
+    //private StadoSpeak stadoSpeak = StadoSpeak.end;
+    private byte stateSpeak = Utils.STATE_NOT_INIT;
 
     @Override
     public void onCreate() {
@@ -62,7 +62,7 @@ public class ServiceTTS extends Service implements TextToSpeech.OnInitListener {
             @Override
             protected void finalize() throws Throwable {
                 super.finalize();
-                Log.i(TAG +"ini ","Finalizo cargar pdf");
+                Log.i(TAG +"ini ","Finalizo textToSpeech");
             }
 
             @Override
@@ -79,7 +79,8 @@ public class ServiceTTS extends Service implements TextToSpeech.OnInitListener {
             @Override
             public void onStart(String s) {
                 Log.i(TAG +" ini ","Start");
-                stadoSpeak= StadoSpeak.playin;
+                //stadoSpeak= StadoSpeak.playin; **
+                stateSpeak = Utils.STATE_PLAYING;
                 /*todo:actualizar UI
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
@@ -92,7 +93,7 @@ public class ServiceTTS extends Service implements TextToSpeech.OnInitListener {
 
             @Override
             public void onDone(String s) {
-                if (stadoSpeak!= StadoSpeak.stoped) {
+                if (stateSpeak!= Utils.STATE_STOPED) {
                     next();
                 }
             }
@@ -112,7 +113,6 @@ public class ServiceTTS extends Service implements TextToSpeech.OnInitListener {
         Log.i(TAG, "onBind: eco");
         return null;
     }
-
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -145,9 +145,9 @@ public class ServiceTTS extends Service implements TextToSpeech.OnInitListener {
                 //initPlayer();
                 break;
             }
-            case Utils.ACTION_NEX:{
+            case Utils.ACTION_PREV:{
                 startForeground(Utils.NOTIFICATION_ID_FOREGROUND_SERVICE, notificacion());
-                next();
+                prev();
                 break;
             }
             case Utils.ACTION_PLAY:{
@@ -165,15 +165,23 @@ public class ServiceTTS extends Service implements TextToSpeech.OnInitListener {
                 stopSpeak();
                 break;
             }
+            case Utils.ACTION_NEX:{
+                startForeground(Utils.NOTIFICATION_ID_FOREGROUND_SERVICE, notificacion());
+                next();
+                break;
+            }
+            case Utils.ACTION_CLOSE:{
+                //startForeground(Utils.NOTIFICATION_ID_FOREGROUND_SERVICE, notificacion());
+                stopSpeak();
+                textToSpeech.shutdown();//todo:agregar esto a stopSpeak
+                stopForeground(true);
+                stopSelf();
+                break;
+            }
             default:{
                 break;
             }
         }
-    }
-
-    @Override
-    public void onInit(int i) {
-
     }
 
     private void speakBook(int numPage) {
@@ -188,7 +196,8 @@ public class ServiceTTS extends Service implements TextToSpeech.OnInitListener {
             if(txt.trim().equals(""))txt="pagina "+numPage;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 textToSpeech.speak(txt, TextToSpeech.QUEUE_FLUSH, null, String.valueOf(numPage));
-                stadoSpeak = StadoSpeak.playin;
+                //**stadoSpeak = StadoSpeak.playin;
+                stateSpeak = Utils.STATE_PLAYING;
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -213,19 +222,24 @@ public class ServiceTTS extends Service implements TextToSpeech.OnInitListener {
 
     public void stopSpeak(){
         Log.i(TAG, "stopSpeak: aver si esto es de tu talla");
-        stadoSpeak= StadoSpeak.stoped;
+        //**stadoSpeak= StadoSpeak.stoped;
+        stateSpeak = Utils.STATE_STOPED;
         textToSpeech.stop();
         //textToSpeech.shutdown();//stop();
     }
 
     public Notification notificacion(){
         Intent notificationIntent = new Intent(this, MainActivity.class);
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
-                notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            } else {
-                notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            }
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
+            notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        } else {
+            notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        }
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Intent IPrevIntent = new Intent(this, ServiceTTS.class);
+        IPrevIntent.setAction(Utils.ACTION_PREV);
+        PendingIntent IPendingPrevIntent = PendingIntent.getService(this, 0, IPrevIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         Intent IPlayIntent = new Intent(this, ServiceTTS.class);
         IPlayIntent.setAction(Utils.ACTION_PLAY);
@@ -239,11 +253,22 @@ public class ServiceTTS extends Service implements TextToSpeech.OnInitListener {
         IStopIntent.setAction(Utils.ACTION_STOP);
         PendingIntent IPendingStopIntent = PendingIntent.getService(this, 0, IStopIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
+        Intent INextIntent = new Intent(this, ServiceTTS.class);
+        INextIntent.setAction(Utils.ACTION_NEX);
+        PendingIntent IPendingNextIntent = PendingIntent.getService(this, 0, INextIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Intent ICloseIntent = new Intent(this, ServiceTTS.class);
+        ICloseIntent.setAction(Utils.ACTION_CLOSE);
+        PendingIntent IPendingCloseIntent = PendingIntent.getService(this, 0, ICloseIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
         RemoteViews remoteViews_NotificationLayout = new RemoteViews(getPackageName(), R.layout.notification_small);
 
+        remoteViews_NotificationLayout.setOnClickPendingIntent(R.id.bt_notif_prev, IPendingPrevIntent);
         remoteViews_NotificationLayout.setOnClickPendingIntent(R.id.bt_notif_play, IPendingPlayIntent);
         remoteViews_NotificationLayout.setOnClickPendingIntent(R.id.bt_notif_pause, IPendingPauseIntent);
         remoteViews_NotificationLayout.setOnClickPendingIntent(R.id.bt_notif_stop, IPendingStopIntent);
+        remoteViews_NotificationLayout.setOnClickPendingIntent(R.id.bt_notif_next, IPendingNextIntent);
+        remoteViews_NotificationLayout.setOnClickPendingIntent(R.id.bt_notif_close, IPendingCloseIntent);
 
         Notification notification;
         /*if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
@@ -272,7 +297,6 @@ public class ServiceTTS extends Service implements TextToSpeech.OnInitListener {
         // Notification ID cannot be 0.
         return notification;
     }
-
 
     public String stripText(InputStream pdfInputStream, int page) {
         String textParsed = "";
@@ -303,9 +327,14 @@ public class ServiceTTS extends Service implements TextToSpeech.OnInitListener {
         return textParsed;
     }
 
-    public static int getState() {
+    public byte getStateSpeak() {
         //return mStateService;
-        return 0;
+        return stateSpeak;
+    }
+
+    @Override
+    public void onInit(int i) {
+        Log.i(TAG, "onInit:TextToSpeech i:"+i);
     }
 
     @Override

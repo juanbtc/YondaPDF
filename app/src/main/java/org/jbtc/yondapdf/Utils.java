@@ -10,9 +10,11 @@ public class Utils {
     public static final String ACTION_PAUSE = "tts.pause";
     public static final String ACTION_STOP = "tts.stop";
     public static final String ACTION_NEX = "tts.next";
+    public static final String ACTION_CLOSE = "tts.close";
 
-    public static final int STATE_NOT_INIT = 0;
-    public static final int STATE_PLAY = 10;
-    public static final int STATE_PAUSE = 20;
-    public static final int STATE_STOP = 30;
+    public static final byte STATE_NOT_INIT = 0;
+    public static final byte STATE_PLAYING = 10;
+    public static final byte STATE_PAUSED = 20;
+    public static final byte STATE_STOPED = 30;
+    public static final byte STATE_CLOSED = 40;
 }

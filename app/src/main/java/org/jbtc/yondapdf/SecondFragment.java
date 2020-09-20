@@ -261,31 +261,51 @@ public class SecondFragment extends Fragment {
         binding.btSecPrev.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                prev();
+                //prev();
+                Intent IPrevIntent = new Intent(getContext(), ServiceTTS.class);
+                IPrevIntent.setAction(Utils.ACTION_PREV);
+                //PendingIntent IPendingPrevIntent = PendingIntent.getService(getContext(), 0, IPrevIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                ContextCompat.startForegroundService(getContext(), IPrevIntent);
             }
         });
         binding.btSecPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                speakBook(book.getPageTag()+1);
+                //speakBook(book.getPageTag()+1);
+                Intent IPlayIntent = new Intent(getContext(), ServiceTTS.class);
+                IPlayIntent.setAction(Utils.ACTION_PLAY);
+                //PendingIntent IPendingPlayIntent = PendingIntent.getService(getContext(), 0, IPlayIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                ContextCompat.startForegroundService(getContext(), IPlayIntent);
             }
         });
         binding.btSecPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                stopSpeak();
+                //stopSpeak();
+                Intent IPauseIntent = new Intent(getContext(), ServiceTTS.class);
+                IPauseIntent.setAction(Utils.ACTION_PAUSE);
+                //PendingIntent IPendingPauseIntent = PendingIntent.getService(getContext(), 0, IPauseIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                ContextCompat.startForegroundService(getContext(), IPauseIntent);
             }
         });
         binding.btSecStop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                stopSpeak();
+                //stopSpeak();
+                Intent IStopIntent = new Intent(getContext(), ServiceTTS.class);
+                IStopIntent.setAction(Utils.ACTION_STOP);
+                //PendingIntent IPendingStopIntent = PendingIntent.getService(getContext(), 0, IStopIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                ContextCompat.startForegroundService(getContext(), IStopIntent);
             }
         });
         binding.btSecNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                next();
+                //next();
+                Intent INextIntent = new Intent(getContext(), ServiceTTS.class);
+                INextIntent.setAction(Utils.ACTION_NEX);
+                //PendingIntent IPendingNextIntent = PendingIntent.getService(getContext(), 0, INextIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                ContextCompat.startForegroundService(getContext(), INextIntent);
             }
         });
 
