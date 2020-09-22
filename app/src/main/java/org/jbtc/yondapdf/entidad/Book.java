@@ -18,7 +18,7 @@ public class Book {
     int pageTag;
     @ColumnInfo(name = "pages")
     int pages;
-
+    @ColumnInfo(name = "bitmap")
     String bitmap;
 
     public Book(String uri, String titulo, int pageTag, int pages, String bitmap) {

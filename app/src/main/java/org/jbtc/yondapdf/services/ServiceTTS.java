@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeechService;
@@ -128,13 +129,13 @@ public class ServiceTTS extends Service implements TextToSpeech.OnInitListener {
             uri = Uri.parse(book.getUri());
         }
 
-        tomarAccion(intent.getAction());
+        tomarAccion(intent.getAction(),intent.getExtras());
         //startForeground(1, notificacion());
 
         return START_NOT_STICKY;
     }
 
-    private void tomarAccion(String accion) {
+    private void tomarAccion(String accion, Bundle bundle) {
         if(accion!=null&&!accion.equals(""))
         switch (accion){
             case Utils.ACTION_START:{
@@ -168,6 +169,12 @@ public class ServiceTTS extends Service implements TextToSpeech.OnInitListener {
             case Utils.ACTION_NEX:{
                 startForeground(Utils.NOTIFICATION_ID_FOREGROUND_SERVICE, notificacion());
                 next();
+                break;
+            }
+            case Utils.ACTION_SEND_DATA:{
+                startForeground(Utils.NOTIFICATION_ID_FOREGROUND_SERVICE, notificacion());
+                book.setPageTag(Integer.parseInt(bundle.getString("page")));
+                rdb.bookDAO().updateBook(book);
                 break;
             }
             case Utils.ACTION_CLOSE:{

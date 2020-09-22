@@ -22,15 +22,26 @@
                 android:layout_width="0dp"
                 android:layout_height="?attr/actionBarSize"
                 app:popupTheme="@style/AppTheme.PopupOverlay" />
-            <Button
-                android:id="@+id/bt_appbar_botpage"
+            <FrameLayout
+                android:id="@+id/fl_main_pageicon"
                 android:layout_width="?attr/actionBarSize"
-                android:layout_height="?attr/actionBarSize"
-                android:paddingTop="23dp"
-                android:background="@drawable/ic_botspeak___master"
-                android:textColor="#000000"
-                android:textSize="10sp"
-                android:text="654321"/>
+                android:layout_height="?attr/actionBarSize">
+
+                <ImageView
+                    android:id="@+id/iv_appbar_botpage"
+                    android:layout_width="?attr/actionBarSize"
+                    android:layout_height="?attr/actionBarSize"
+                    android:background="@drawable/ic_botspeak___master" />
+                <TextView
+                    android:id="@+id/tv_main_page_text"
+                    android:gravity="center"
+                    android:layout_width="?attr/actionBarSize"
+                    android:layout_height="?attr/actionBarSize"
+                    android:paddingTop="23dp"
+                    android:textSize="10sp"
+                    android:textColor="@color/colorPrimary"
+                    android:text="654321"/>
+            </FrameLayout>
         </LinearLayout>
 <!--        android:background="?attr/colorPrimary"-->
     </com.google.android.material.appbar.AppBarLayout>

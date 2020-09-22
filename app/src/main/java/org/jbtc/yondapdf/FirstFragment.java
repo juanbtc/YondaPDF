@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.renderscript.ScriptGroup;
 import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -31,19 +32,21 @@ import org.jbtc.yondapdf.databinding.FragmentFirstBinding;
 import org.jbtc.yondapdf.entidad.Book;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 
 public class FirstFragment extends Fragment {
 
     private View view;
     private static final String dbName = "bookslightnovel";
-
+    private static final String TAG = "iFirstf";
     //recicler
     //private RecyclerView recyclerView;
     private AdapterBook mAdapter;
     private RecyclerView.LayoutManager layoutManager;
-
     private FragmentFirstBinding binding;
     private RoomDatabaseBooksLN rdb;
 
@@ -80,7 +83,7 @@ public class FirstFragment extends Fragment {
 
         getMainActivity().setTextSizeToolbar(30f);
 
-        getMainActivity().getActivityMainBinding().btAppbarBotpage.setVisibility(View.GONE);
+        getMainActivity().getActivityMainBinding().flMainPageicon.setVisibility(View.GONE);
 
         return view;
     }
@@ -136,23 +139,37 @@ public class FirstFragment extends Fragment {
             if (resultData != null) {
                 Uri uri = resultData.getData();
                 int pages=0;
-                String bitmap="";
-                try {
-                    InputStream i = getContext().getContentResolver().openInputStream(uri);
-                    PDDocument pdf = PDDocument.load(i);
-                    pages = pdf.getNumberOfPages();
-                    PDFRenderer renderer = new PDFRenderer(pdf);
-                    bitmap = bitmapToBase64(renderer.renderImage(0));
-                }catch (Exception e){e.printStackTrace();}
                 String name = uri.getLastPathSegment();
-                if(name.contains(":")){
-                    String [] nm = name.split(":");
-                    name = nm[nm.length-1];
-                }if(name.contains("/")){
-                    String [] nm = name.split("/");
-                    name = nm[nm.length-1];
-                }
-                Book b = new Book(uri.toString(),name,0,pages,bitmap);
+                        if(name.contains(":")){
+                            String [] nm = name.split(":");
+                            name = nm[nm.length-1];
+                        }if(name.contains("/")){
+                            String [] nm = name.split("/");
+                            name = nm[nm.length-1];
+                        }
+                //String bitmap="";
+
+                String pathDir = getActivity().getFilesDir()+"/png/";
+                String pathFile=pathDir+name.trim().replace(" ","_")+".png";
+                File dir = new File(pathDir);if(!dir.exists())dir.mkdir();
+                String path="";
+                    try {
+                        InputStream i = getContext().getContentResolver().openInputStream(uri);
+                        PDDocument pdf = PDDocument.load(i);
+                        pages = pdf.getNumberOfPages();
+                        PDFRenderer renderer = new PDFRenderer(pdf);
+                        Bitmap bitmap = renderer.renderImage(0);
+
+                        File file = new File(pathFile);
+                        OutputStream out = new FileOutputStream(file);
+                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+                        out.flush();
+                        out.close();
+                        path = file.getAbsolutePath();
+                    }catch (Exception e){e.printStackTrace();}
+
+                Log.i(TAG, "onActivityResult: file.getAbsolutePath()"+path);
+                Book b = new Book(uri.toString(),name,0,pages,path);
                 rdb.bookDAO().insertBook(b);
                 mAdapter.updateList(rdb.bookDAO().getAll());
                 //mAdapter.notifyDataSetChanged();

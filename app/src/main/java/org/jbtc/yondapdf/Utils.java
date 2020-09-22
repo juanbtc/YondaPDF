@@ -11,6 +11,7 @@ public class Utils {
     public static final String ACTION_STOP = "tts.stop";
     public static final String ACTION_NEX = "tts.next";
     public static final String ACTION_CLOSE = "tts.close";
+    public static final String ACTION_SEND_DATA = "tts.send.data";
 
     public static final byte STATE_NOT_INIT = 0;
     public static final byte STATE_PLAYING = 10;

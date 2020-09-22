@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.jbtc.yondapdf.R;
 import org.jbtc.yondapdf.entidad.Book;
 
+import java.io.File;
 import java.util.List;
 
 public class AdapterBook extends RecyclerView.Adapter<AdapterBook.ViewHolderBook> {
@@ -36,7 +37,8 @@ public class AdapterBook extends RecyclerView.Adapter<AdapterBook.ViewHolderBook
         holder.tvName.setText(items.get(position).getTitulo());
         holder.tvPages.setText(String.valueOf(items.get(position).getPages()));
         holder.tvTag.setText(String.valueOf(items.get(position).getPageTag()));
-        holder.ivBitmap.setImageBitmap(base64ToBitmap(items.get(position).getBitmap()));
+            Bitmap bitmap = BitmapFactory.decodeFile(items.get(position).getBitmap());
+        holder.ivBitmap.setImageBitmap(bitmap);
         holder.v.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

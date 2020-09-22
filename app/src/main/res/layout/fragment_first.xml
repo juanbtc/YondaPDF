@@ -24,6 +24,7 @@
         android:layout_margin="@dimen/fab_margin"
         tools:ignore="VectorDrawableCompat"
         app:srcCompat="@drawable/ic_add_white_18dp"
+        app:tint="#ffffff"
         app:maxImageSize="50dp"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

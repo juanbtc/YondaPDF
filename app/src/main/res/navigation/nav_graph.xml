@@ -25,4 +25,9 @@
             android:id="@+id/action_SecondFragment_to_FirstFragment"
             app:destination="@id/FirstFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/novelFragment"
+        android:name="org.jbtc.yondapdf.NovelFragment"
+        android:label="fragment_novel"
+        tools:layout="@layout/fragment_novel" />
 </navigation>

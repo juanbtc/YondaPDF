@@ -48,6 +48,10 @@ public class MainActivity extends AppCompatActivity {
     RoomDatabaseBooksLN rdb;
     ActivityMainBinding binding;
 
+    //todo:xjava
+    //todo:layoutu notification
+    //todo:image
+    //todo:progresbar
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
