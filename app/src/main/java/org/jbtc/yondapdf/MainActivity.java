@@ -37,6 +37,7 @@ import org.jbtc.yondapdf.database.RoomDatabaseBooksLN;
 import org.jbtc.yondapdf.databinding.ActivityMainBinding;
 import org.jbtc.yondapdf.entidad.Book;
 import org.spongycastle.asn1.x509.AlgorithmIdentifier;
+import org.spongycastle.jcajce.provider.symmetric.AES;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -95,9 +96,17 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
+        /*switch (id){
+            case R.id.action_settings: {
+                return true;
+            }
+            case R.id.action_novelas: {
+                Toast.makeText(this,"de main activity",Toast.LENGTH_LONG).show();
+                break;
+            }
+            default:
+                break;
+        }*/
 
         return super.onOptionsItemSelected(item);
     }

@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -85,6 +86,15 @@ public class FirstFragment extends Fragment {
 
         getMainActivity().getActivityMainBinding().flMainPageicon.setVisibility(View.GONE);
 
+        binding.fab.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                NavHostFragment.findNavController(FirstFragment.this)
+                        .navigate(R.id.novelFragment);
+                return true;
+            }
+        });
+
         return view;
     }
 
@@ -124,6 +134,40 @@ public class FirstFragment extends Fragment {
             }
         });
         */
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(@NonNull Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        //menu.findItem(R.id.action_botspeak).setVisible(false);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        //menu.findItem(R.id.action_botspeak).setVisible(false);
+        menu.clear();
+        inflater.inflate(R.menu.menu_main, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        switch (id){
+            case R.id.action_settings: {
+                return true;
+            }
+            case R.id.action_novelas: {
+                NavHostFragment.findNavController(FirstFragment.this)
+                        .navigate(R.id.novelFragment);
+                break;
+            }
+            default:
+                break;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override

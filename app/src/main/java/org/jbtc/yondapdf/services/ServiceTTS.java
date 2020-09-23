@@ -25,11 +25,14 @@ import com.tom_roush.pdfbox.rendering.PDFRenderer;
 import com.tom_roush.pdfbox.text.PDFTextStripper;
 
 import org.jbtc.yondapdf.MainActivity;
+import org.jbtc.yondapdf.NovelFragment;
 import org.jbtc.yondapdf.R;
 import org.jbtc.yondapdf.SecondFragment;
 import org.jbtc.yondapdf.Utils;
+import org.jbtc.yondapdf.database.DataBaseNovel;
 import org.jbtc.yondapdf.database.RoomDatabaseBooksLN;
 import org.jbtc.yondapdf.entidad.Book;
+import org.jbtc.yondapdf.model.Novela;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,6 +49,9 @@ public class ServiceTTS extends Service implements TextToSpeech.OnInitListener {
     private RoomDatabaseBooksLN rdb;
     private Book book;
     private Uri uri;
+    private DataBaseNovel dbnovel;
+    private Novela novela;
+
     //private enum StadoSpeak {playin,end,stoped}
     //private StadoSpeak stadoSpeak = StadoSpeak.end;
     private byte stateSpeak = Utils.STATE_NOT_INIT;
@@ -58,6 +64,7 @@ public class ServiceTTS extends Service implements TextToSpeech.OnInitListener {
                 .allowMainThreadQueries()
                 .enableMultiInstanceInvalidation()
                 .build();
+        dbnovel = new DataBaseNovel(getApplicationContext());
 
         textToSpeech  =new TextToSpeech(getApplicationContext(),new TextToSpeech.OnInitListener(){
             @Override
@@ -75,7 +82,6 @@ public class ServiceTTS extends Service implements TextToSpeech.OnInitListener {
                 }*/
             }
         } );
-
         textToSpeech.setOnUtteranceProgressListener(new UtteranceProgressListener() {
             @Override
             public void onStart(String s) {
@@ -95,7 +101,7 @@ public class ServiceTTS extends Service implements TextToSpeech.OnInitListener {
             @Override
             public void onDone(String s) {
                 if (stateSpeak!= Utils.STATE_STOPED) {
-                    next();
+                    //next();
                 }
             }
 
@@ -123,13 +129,13 @@ public class ServiceTTS extends Service implements TextToSpeech.OnInitListener {
             stopSelf();
             return START_NOT_STICKY;
         }
-
-        if(book==null) {
-            book = rdb.bookDAO().getBookById(intent.getExtras().getInt("id"));
-            uri = Uri.parse(book.getUri());
+        String accion=intent.getAction();
+        if(book==null&&!accion.equals(Utils.ACTION_PLAY_NOVEL)) {
+                book = rdb.bookDAO().getBookById(intent.getExtras().getInt("id"));
+                uri = Uri.parse(book.getUri());
         }
 
-        tomarAccion(intent.getAction(),intent.getExtras());
+        tomarAccion(accion,intent.getExtras());
         //startForeground(1, notificacion());
 
         return START_NOT_STICKY;
@@ -177,6 +183,13 @@ public class ServiceTTS extends Service implements TextToSpeech.OnInitListener {
                 rdb.bookDAO().updateBook(book);
                 break;
             }
+            case Utils.ACTION_PLAY_NOVEL:{
+                startForeground(Utils.NOTIFICATION_ID_FOREGROUND_SERVICE, notificacion());
+                novela = dbnovel.getNovela(bundle.getInt("id"));
+                Log.i(TAG, "tomarAccion: "+novela.getTitulo());
+                playNovel(novela);
+                break;
+            }
             case Utils.ACTION_CLOSE:{
                 //startForeground(Utils.NOTIFICATION_ID_FOREGROUND_SERVICE, notificacion());
                 stopSpeak();
@@ -188,6 +201,24 @@ public class ServiceTTS extends Service implements TextToSpeech.OnInitListener {
             default:{
                 break;
             }
+        }
+    }
+
+    private void playNovel(Novela novela) {
+        Log.i(TAG, "playNovel: entro a novela");
+        try {
+            if (textToSpeech.isSpeaking()) {
+                stopSpeak();
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                //textToSpeech.speak(novela.getCap().split(".")[0], TextToSpeech.QUEUE_FLUSH, null, String.valueOf(novela.getId()));
+                textToSpeech.speak(novela.getCap(), TextToSpeech.QUEUE_FLUSH, null, String.valueOf(novela.getId()));
+                //**stadoSpeak = StadoSpeak.playin;
+                stateSpeak = Utils.STATE_PLAYING;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
