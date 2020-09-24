@@ -14,6 +14,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -39,9 +41,16 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableEmitter;
+import io.reactivex.rxjava3.core.ObservableOnSubscribe;
+import io.reactivex.rxjava3.core.Observer;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+
 public class FirstFragment extends Fragment {
 
-    private View view;
     private static final String dbName = "bookslightnovel";
     private static final String TAG = "iFirstf";
     //recicler
@@ -50,7 +59,7 @@ public class FirstFragment extends Fragment {
     private RecyclerView.LayoutManager layoutManager;
     private FragmentFirstBinding binding;
     private RoomDatabaseBooksLN rdb;
-
+    private Disposable disposable;
 
     @Override
     public View onCreateView(LayoutInflater inflater,
@@ -65,7 +74,6 @@ public class FirstFragment extends Fragment {
                 .enableMultiInstanceInvalidation()
                 .build();
         binding = FragmentFirstBinding.inflate(inflater, container, false);
-        view = binding.getRoot();
 
         binding.fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -86,16 +94,7 @@ public class FirstFragment extends Fragment {
 
         getMainActivity().getActivityMainBinding().flMainPageicon.setVisibility(View.GONE);
 
-        binding.fab.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-                NavHostFragment.findNavController(FirstFragment.this)
-                        .navigate(R.id.novelFragment);
-                return true;
-            }
-        });
-
-        return view;
+        return binding.getRoot();
     }
 
     private void setupRecycler() {
@@ -160,8 +159,7 @@ public class FirstFragment extends Fragment {
                 return true;
             }
             case R.id.action_novelas: {
-                NavHostFragment.findNavController(FirstFragment.this)
-                        .navigate(R.id.novelFragment);
+                Toast.makeText(getContext(),"accion completada desde fragment",Toast.LENGTH_LONG).show();
                 break;
             }
             default:
@@ -180,46 +178,121 @@ public class FirstFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
         super.onActivityResult(requestCode, resultCode, resultData);
         if (requestCode == 1 && resultCode == getActivity().RESULT_OK) {
-            if (resultData != null) {
-                Uri uri = resultData.getData();
-                int pages=0;
-                String name = uri.getLastPathSegment();
-                        if(name.contains(":")){
-                            String [] nm = name.split(":");
-                            name = nm[nm.length-1];
-                        }if(name.contains("/")){
-                            String [] nm = name.split("/");
-                            name = nm[nm.length-1];
-                        }
-                //String bitmap="";
+            switch (requestCode){
+                case 1:{
+                    if (resultData != null) {
+                        /*
+                        Thread t=new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        binding.pbFirstWait.setVisibility(View.VISIBLE);
+                                    }
+                                });
 
-                String pathDir = getActivity().getFilesDir()+"/png/";
-                String pathFile=pathDir+name.trim().replace(" ","_")+".png";
-                File dir = new File(pathDir);if(!dir.exists())dir.mkdir();
-                String path="";
-                    try {
-                        InputStream i = getContext().getContentResolver().openInputStream(uri);
-                        PDDocument pdf = PDDocument.load(i);
-                        pages = pdf.getNumberOfPages();
-                        PDFRenderer renderer = new PDFRenderer(pdf);
-                        Bitmap bitmap = renderer.renderImage(0);
+                                Book b=createBookFromUri(resultData.getData());
 
-                        File file = new File(pathFile);
-                        OutputStream out = new FileOutputStream(file);
-                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
-                        out.flush();
-                        out.close();
-                        path = file.getAbsolutePath();
-                    }catch (Exception e){e.printStackTrace();}
+                                getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        binding.pbFirstWait.setVisibility(View.GONE);
+                                        rdb.bookDAO().insertBook(b);
+                                        mAdapter.updateList(rdb.bookDAO().getAll());
 
-                Log.i(TAG, "onActivityResult: file.getAbsolutePath()"+path);
-                Book b = new Book(uri.toString(),name,0,pages,path);
-                rdb.bookDAO().insertBook(b);
-                mAdapter.updateList(rdb.bookDAO().getAll());
-                //mAdapter.notifyDataSetChanged();
-                //binding.rvListBook.upda;
+                                    }
+                                });
+                            }
+                        });
+                        t.start();
+                        */
+                        Observable.create(new ObservableOnSubscribe<Book>() {
+                            @Override
+                            public void subscribe(@io.reactivex.rxjava3.annotations.NonNull ObservableEmitter<Book> emitter) throws Throwable {
+                                try {
+                                    emitter.onNext(createBookFromUri(resultData.getData()));
+                                    emitter.onComplete();
+                                }catch (Exception e){emitter.onError(e);e.printStackTrace();}
+                            }
+                        })
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(getObserver());
+                    }
+                    break;
+                }
             }
+
         }
+    }
+
+    private Book createBookFromUri(Uri uri){
+        Log.i(TAG, "createBookFromUri: Hilo: "+Thread.currentThread().getName());
+        int pages=0;
+        String name = uri.getLastPathSegment();
+        if(name.contains(":")){
+            String [] nm = name.split(":");
+            name = nm[nm.length-1];
+        }if(name.contains("/")){
+            String [] nm = name.split("/");
+            name = nm[nm.length-1];
+        }
+        //String bitmap="";
+
+        String pathDir = getActivity().getFilesDir()+"/png/";
+        String pathFile=pathDir+name.trim().replace(" ","_")+".png";
+        File dir = new File(pathDir);if(!dir.exists())dir.mkdir();
+        String path="";
+        try {
+            InputStream i = getContext().getContentResolver().openInputStream(uri);
+            PDDocument pdf = PDDocument.load(i);
+            pages = pdf.getNumberOfPages();
+            PDFRenderer renderer = new PDFRenderer(pdf);
+            Bitmap bitmap = renderer.renderImage(0);
+
+            File file = new File(pathFile);
+            OutputStream out = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+            out.flush();
+            out.close();
+            path = file.getAbsolutePath();
+        }catch (Exception e){e.printStackTrace();}
+
+        Log.i(TAG, "onActivityResult: file.getAbsolutePath()"+path);
+        Book b = new Book(uri.toString(),name,0,pages,path);
+        return b;
+    }
+
+    private Observer getObserver(){
+        return new Observer<Book>() {
+            private Book mbook;
+            @Override
+            public void onSubscribe(@io.reactivex.rxjava3.annotations.NonNull Disposable d) {
+                disposable=d;
+                binding.pbFirstWait.setVisibility(View.VISIBLE);
+                Log.i(TAG, "onSubscribe: ");
+            }
+
+            @Override
+            public void onNext(Book book) {
+                Log.i(TAG, "onNext: ");
+                mbook=book;
+                //binding.pbFirstWait.animate();
+            }
+
+            @Override
+            public void onError(@io.reactivex.rxjava3.annotations.NonNull Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+                binding.pbFirstWait.setVisibility(View.GONE);
+                rdb.bookDAO().insertBook(mbook);
+                mAdapter.updateList(rdb.bookDAO().getAll());
+            }
+        };
     }
 
     private ActionBar getActionBarFromMainActivity() {
@@ -241,6 +314,12 @@ public class FirstFragment extends Fragment {
         return Base64.encodeToString(b, Base64.DEFAULT);
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (disposable!=null)disposable.dispose();
+        Log.i(TAG, "onDestroy: destruido");
+    }
 
     /*
     @Override

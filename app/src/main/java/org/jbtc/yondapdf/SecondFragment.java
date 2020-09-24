@@ -67,7 +67,6 @@ import io.reactivex.rxjava3.disposables.Disposable;
 public class SecondFragment extends Fragment {
 
     private static final String TAG = "nHomef";
-    private static final String dbName = "bookslightnovel";
     private Disposable disposable;
     private RoomDatabaseBooksLN rdb;
     private FragmentSecondBinding binding;
@@ -82,7 +81,7 @@ public class SecondFragment extends Fragment {
         binding = FragmentSecondBinding.inflate(inflater, container, false);
 
         rdb = Room.databaseBuilder(getContext(),
-                RoomDatabaseBooksLN.class, dbName)
+                RoomDatabaseBooksLN.class, Utils.dbName)
                 .allowMainThreadQueries()
                 .enableMultiInstanceInvalidation()
                 .build();
@@ -148,12 +147,13 @@ public class SecondFragment extends Fragment {
             public void onClick(View view) {
                 DialogoPageSpeech dialogoPageSpeech = new DialogoPageSpeech();
                 dialogoPageSpeech.show(getParentFragmentManager(),DialogoPageSpeech.tag);
-                /*dialogoPageSpeech.setNoticeDialogListener(new DialogoPageSpeech.NoticeDialogListener() {
+                dialogoPageSpeech.setNoticeDialogListener(new DialogoPageSpeech.NoticeDialogListener() {
                     @Override
-                    public void onDialogPositiveClick(String page) {
-
+                    public void onDialogPositiveClick(int page) {
+                        book.setPageTag(page);
+                        rdb.bookDAO().updateBook(book);
                     }
-                });*/
+                });
             }
         });
     }

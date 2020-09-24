@@ -11,8 +11,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
+import androidx.room.Room;
 
 import org.jbtc.yondapdf.Utils;
+import org.jbtc.yondapdf.database.RoomDatabaseBooksLN;
 import org.jbtc.yondapdf.databinding.DialogPageSpeechBinding;
 import org.jbtc.yondapdf.services.ServiceTTS;
 
@@ -22,7 +24,7 @@ public class DialogoPageSpeech extends DialogFragment {
     DialogPageSpeechBinding binding;
 
     public interface NoticeDialogListener {
-        public void onDialogPositiveClick(String page);
+        public void onDialogPositiveClick(int page);
     }
     private NoticeDialogListener listener;
     public void setNoticeDialogListener(NoticeDialogListener noticeDialogListener){
@@ -37,12 +39,11 @@ public class DialogoPageSpeech extends DialogFragment {
             @Override
             public void onClick(View view) {
                 String page = binding.tietDialogPagetext.getText().toString();
-                Intent iPlayIntent = new Intent(getContext(), ServiceTTS.class);
-                iPlayIntent.setAction(Utils.ACTION_SEND_DATA);
-                iPlayIntent.putExtra("page",page);
-                ContextCompat.startForegroundService(getContext(), iPlayIntent);
+                int pageInt=Integer.parseInt(page);
+                pageInt--;
+
+                if(listener!=null)listener.onDialogPositiveClick(pageInt);
                 dismiss();
-                //if(listener!=null)listener.onDialogPositiveClick(page);
             }
         });
         return binding.getRoot();

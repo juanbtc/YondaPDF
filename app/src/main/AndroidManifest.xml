@@ -12,10 +12,6 @@
         android:roundIcon="@drawable/ic_botspeak___master"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <service
-            android:name=".services.ServiceTTSNovel"
-            android:enabled="true"
-            android:exported="true"></service>
 
         <activity
             android:name=".MainActivity"

@@ -60,6 +60,9 @@ public class Book {
         this.pageTag++;
     }
 
+    @Ignore
+    public int getPageTagRead(){return pageTag+1;}
+
     public int getPageTag() {
         return pageTag;
     }

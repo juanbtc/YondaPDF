@@ -36,7 +36,7 @@ public class AdapterBook extends RecyclerView.Adapter<AdapterBook.ViewHolderBook
     public void onBindViewHolder(@NonNull ViewHolderBook holder, final int position) {
         holder.tvName.setText(items.get(position).getTitulo());
         holder.tvPages.setText(String.valueOf(items.get(position).getPages()));
-        holder.tvTag.setText(String.valueOf(items.get(position).getPageTag()));
+        holder.tvTag.setText(String.valueOf(items.get(position).getPageTagRead()));
             Bitmap bitmap = BitmapFactory.decodeFile(items.get(position).getBitmap());
         holder.ivBitmap.setImageBitmap(bitmap);
         holder.v.setOnClickListener(new View.OnClickListener() {
