@@ -248,13 +248,14 @@ public class ServiceTTS extends Service {
 
     public void next(){
         book.incPageTag1();
-        //todo:validar in<pages
         rdb.bookDAO().updateBook(book);
-        speakBook(book.getPageTag()+1);
+        if(book.isUnfinished()) {
+            speakBook(book.getPageTagRead());
+        }
         Log.i(TAG +" ini ","done");
     }
 
-    public void stopSpeak(){
+    private void stopSpeak(){
         Log.i(TAG, "stopSpeak: aver si esto es de tu talla");
         //**stadoSpeak= StadoSpeak.stoped;
         stateSpeak = Utils.STATE_STOPED;
@@ -262,7 +263,7 @@ public class ServiceTTS extends Service {
         //textToSpeech.shutdown();//stop();
     }
 
-    public Notification notificacion(){
+    private Notification notificacion(){
         Intent notificationIntent = new Intent(this, MainActivity.class);
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
             notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -335,7 +336,7 @@ public class ServiceTTS extends Service {
         return notification;
     }
 
-    public String stripText(InputStream pdfInputStream, int page) {
+    private String stripText(InputStream pdfInputStream, int page) {
         Log.i(TAG, "stripText hilo: "+Thread.currentThread().getName());
         String textParsed = "";
         PDDocument document = null;
@@ -369,37 +370,6 @@ public class ServiceTTS extends Service {
         return stateSpeak;
     }
 
-    private UtteranceProgressListener getUtteranceProgressListener(){
-        return new UtteranceProgressListener() {
-            @Override
-            public void onStart(String s) {
-                Log.i(TAG +" ini ","Start");
-                //stadoSpeak= StadoSpeak.playin; **
-                stateSpeak = Utils.STATE_PLAYING;
-                /*todo:actualizar UI
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        getMainActivity().getActivityMainBinding().btAppbarBotpage.setText(String.valueOf(book.getPageTag()+1));
-
-                    }
-                });*/
-            }
-
-            @Override
-            public void onDone(String s) {
-                if (stateSpeak!= Utils.STATE_STOPED) {
-                    //next();
-                }
-            }
-
-            @Override
-            public void onError(String s) {
-                Log.i(TAG +" ini ","error:"+s);
-            }
-        };
-    }
-
     private TextToSpeech.OnInitListener getOnIntListener(){
         return new TextToSpeech.OnInitListener(){
             @Override
@@ -420,8 +390,39 @@ public class ServiceTTS extends Service {
 
     }
 
+    private UtteranceProgressListener getUtteranceProgressListener(){
+        return new UtteranceProgressListener() {
+            @Override
+            public void onStart(String s) {
+                Log.i(TAG +" ini ","Start");
+                stateSpeak = Utils.STATE_PLAYING;
+                /*todo:actualizar UI
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        getMainActivity().getActivityMainBinding().btAppbarBotpage.setText(String.valueOf(book.getPageTag()+1));
+
+                    }
+                });*/
+            }
+
+            @Override
+            public void onDone(String s) {
+                if (stateSpeak!= Utils.STATE_STOPED) {
+                    next();
+                }
+            }
+
+            @Override
+            public void onError(String s) {
+                Log.i(TAG +" ini ","error:"+s);
+            }
+        };
+    }
+
     @Override
     public void onDestroy() {
-        super.onDestroy(); disposable.dispose();
+        if(disposable!=null)disposable.dispose();
+        super.onDestroy();
     }
 }

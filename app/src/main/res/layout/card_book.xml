@@ -13,15 +13,19 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
+        <CheckBox
+            android:gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:visibility="gone"/>
+
         <ImageView
             android:id="@+id/iv_card_page1"
             android:layout_width="70dp"
             android:layout_height="100dp"
             android:src="@mipmap/hgt"
             android:scaleType="fitCenter"
-            android:adjustViewBounds="true"
-            android:background="@color/colorAccent"
-            />
+            android:adjustViewBounds="true" />
 
         <LinearLayout
 
@@ -77,6 +81,4 @@
 
         </LinearLayout>
     </LinearLayout>
-
-
 </androidx.cardview.widget.CardView>

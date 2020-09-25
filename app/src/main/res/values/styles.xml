@@ -1,5 +1,5 @@
 <resources>
-    <!-- Base application theme. -->
+    <!-- tema Base de la  applicacion. -->
     <!--<style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">-->
     <style name="AppTheme" parent="Theme.MaterialComponents.Light.DarkActionBar">
         <!-- Customize your theme here. -->
@@ -8,9 +8,11 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <!--  thema de la activity  -->
     <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+        <item name="windowActionModeOverlay">true</item>
     </style>
 
 

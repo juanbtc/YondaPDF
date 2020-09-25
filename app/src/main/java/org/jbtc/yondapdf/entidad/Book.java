@@ -95,6 +95,10 @@ public class Book {
         this.titulo = titulo;
     }
 
+    public boolean isUnfinished(){
+        return pageTag<pages;
+    }
+
     @Ignore
     public void decPageTag1() {
         this.pageTag--;

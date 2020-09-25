@@ -74,9 +74,7 @@ public class SecondFragment extends Fragment {
     private Uri uri;
 
     @Override
-    public View onCreateView(LayoutInflater inflater,
-                             ViewGroup container,
-                             Bundle savedInstanceState ) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState ) {
         // Inflate the layout for this fragment
         binding = FragmentSecondBinding.inflate(inflater, container, false);
 
@@ -97,10 +95,7 @@ public class SecondFragment extends Fragment {
         //ServiceTTS.getState();
         setupForeground(id);
 
-        //getActivity().invalidateOptionsMenu();
-        setHasOptionsMenu(true);
-        getMainActivity().setTextSizeToolbar(20f);
-        getMainActivity().getActivityMainBinding().flMainPageicon.setVisibility(View.VISIBLE);
+
 
         View view = binding.getRoot();
         return view;
@@ -114,8 +109,7 @@ public class SecondFragment extends Fragment {
         ContextCompat.startForegroundService(getContext(), serviceIntent);
     }
 
-    public void onViewCreated(@NonNull View view,
-                              Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         getActionBarFromMainActivity().setTitle(book.getTitulo());
@@ -156,6 +150,16 @@ public class SecondFragment extends Fragment {
                 });
             }
         });
+        binding.tvBookpdfPage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                getMainActivity().setTextSizeToolbar(20f,"2do");
+            }
+        });
+
+        //getActivity().invalidateOptionsMenu();
+        getMainActivity().getActivityMainBinding().flMainPageicon.setVisibility(View.VISIBLE);
+        setHasOptionsMenu(true);
     }
 
     @Override
@@ -169,9 +173,11 @@ public class SecondFragment extends Fragment {
     @Override
     public void onPrepareOptionsMenu(@NonNull Menu menu) {
         super.onPrepareOptionsMenu(menu);
-
+        getMainActivity().setTextSizeToolbar(20f,"2do onPrepare");
         //menu.findItem(R.id.action_botspeak).setVisible(false);
     }
+
+
 
     private ActionBar getActionBarFromMainActivity() {
         if(getActivity() instanceof MainActivity){

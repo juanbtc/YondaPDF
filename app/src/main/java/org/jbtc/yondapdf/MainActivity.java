@@ -1,43 +1,33 @@
 package org.jbtc.yondapdf;
 
 import android.Manifest;
-import android.content.Intent;
+import android.app.SearchManager;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
-import android.content.res.Resources;
-import android.net.Uri;
 import android.os.Bundle;
 
-import com.github.barteksc.pdfviewer.PDFView;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatTextView;
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
-import androidx.navigation.fragment.NavHostFragment;
-import androidx.navigation.ui.NavigationUI;
 import androidx.room.Room;
 
-import android.os.Environment;
 import android.util.Log;
 import android.util.TypedValue;
-import android.view.View;
 
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.jbtc.yondapdf.database.RoomDatabaseBooksLN;
 import org.jbtc.yondapdf.databinding.ActivityMainBinding;
-import org.jbtc.yondapdf.entidad.Book;
-import org.spongycastle.asn1.x509.AlgorithmIdentifier;
-import org.spongycastle.jcajce.provider.symmetric.AES;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -48,7 +38,6 @@ public class MainActivity extends AppCompatActivity {
     AssetManager assetManager;
     RoomDatabaseBooksLN rdb;
     ActivityMainBinding binding;
-
     //todo:xjava
     //todo:layoutu notification
     //todo:image
@@ -61,11 +50,11 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+
         //NavigationView navigationView = findViewById(R.id.nav_view);
         navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         //NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         //NavigationUI.setupWithNavController(navigationView, navController);
-
 
         rdb = Room.databaseBuilder(getApplicationContext(),
                 RoomDatabaseBooksLN.class, dbName)
@@ -75,24 +64,29 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         //Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
-        //menu.findItem(R.id.action_botspeak).setVisible(false);
+
+        // Get the SearchView and set the searchable configuration
+        //SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+        // Assumes current activity is the searchable activity
+        //searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        //searchView.setIconifiedByDefault(false); // Do not iconify the widget; expand it by default
+
+                //menu.findItem(R.id.action_botspeak).setVisible(false);
         Log.i("as21", "onCreateOptionsMenu: paso por menu del mainactivity");
         return true;
     }
-
-
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
+
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
@@ -111,13 +105,20 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void setTextSizeToolbar(float sp){
+    public void setTextSizeToolbar(float sp, String source){
         Toolbar toolbar = findViewById(R.id.toolbar);
         //((TextView)toolbar.getChildAt(0)).setTypeface(typeFace);
-        ((TextView) toolbar.getChildAt(0)).setTextSize(TypedValue.COMPLEX_UNIT_PX,sp);
+        Log.i("TAG12", "setTextSizeToolbar: count: "+toolbar.getChildCount());
+        for(int i=0;i<toolbar.getChildCount();i++) {
+            String clase=toolbar.getChildAt(i).getClass().getName();
+            Log.i("TAG12", "setTextSizeToolbar: "+source+" tipo: "+clase);
+            if(clase.equals(AppCompatTextView.class.getName())){
+                ((TextView) toolbar.getChildAt(i)).setTextSize(TypedValue.COMPLEX_UNIT_PX,sp);
+                break;
+            }
+        }
+
     }
-
-
 
     @Override
     protected void onStart() {
