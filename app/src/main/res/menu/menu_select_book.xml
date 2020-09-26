@@ -2,12 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:icon="@android:drawable/ic_menu_search"
-        android:title="titulo"
-        app:showAsAction="always"/>
-
-    <item
-        android:icon="@android:drawable/ic_delete"
-        android:title="ti"
+        android:icon="@drawable/ic_delete_forever_black_18dp"
+        android:title="delete"
         app:showAsAction="always"/>
 </menu>

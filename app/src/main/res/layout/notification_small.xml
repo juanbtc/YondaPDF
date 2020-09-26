@@ -11,12 +11,10 @@
         android:background="@drawable/bg_menu_play_control"
         android:gravity="center_vertical"
         android:orientation="horizontal">
-
         <FrameLayout
             android:id="@+id/fl_notif_pageicon"
             android:layout_width="60dp"
             android:layout_height="60dp">
-
             <ImageView
                 android:id="@+id/iv_notif_botpage"
                 android:layout_width="60dp"
@@ -54,18 +52,23 @@
                     android:id="@+id/bt_notif_prev"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-
                     android:background="@drawable/ic_skip_previous_black_18dp" />
-                <Button
-                    android:id="@+id/bt_notif_play"
+                <FrameLayout
                     android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:background="@drawable/ic_play_circle_filled_black_18dp" />
-                <Button
-                    android:id="@+id/bt_notif_pause"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:background="@drawable/ic_pause_circle_filled_black_18dp" />
+                    android:layout_height="40dp">
+                    <Button
+                        android:id="@+id/bt_notif_play"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/ic_play_circle_filled_black_18dp" />
+                    <ProgressBar
+                        android:id="@+id/pb_notif_wait"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:progressTint="@color/colorAccent"
+                        android:visibility="visible"
+                        android:layout_gravity="center"/>
+                </FrameLayout>
                 <Button
                     android:id="@+id/bt_notif_stop"
                     android:layout_width="40dp"
@@ -80,10 +83,9 @@
                     android:id="@+id/bt_notif_close"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:background="@drawable/ic_close_black_18dp" />
+                    android:background="@drawable/ic_cancel_black_18dp" />
             </LinearLayout>
         </LinearLayout>
-
 
     </LinearLayout>
 

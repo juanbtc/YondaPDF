@@ -139,6 +139,12 @@ public class MainActivity extends AppCompatActivity {
 
             ActivityCompat.requestPermissions(MainActivity.this,new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
         }
+        if (ContextCompat.checkSelfPermission(MainActivity.this,
+                Manifest.permission.MANAGE_DOCUMENTS) != PackageManager.PERMISSION_GRANTED)
+        {
+
+            ActivityCompat.requestPermissions(MainActivity.this,new String[] {Manifest.permission.MANAGE_DOCUMENTS}, 1);
+        }
     }
 
     public ActivityMainBinding getActivityMainBinding(){

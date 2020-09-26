@@ -12,10 +12,12 @@ import android.os.IBinder;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.util.Log;
+import android.view.View;
 import android.widget.RemoteViews;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 import androidx.room.Room;
 
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
@@ -52,6 +54,8 @@ public class ServiceTTS extends Service {
     private Uri uri;
     private byte stateSpeak = Utils.STATE_NOT_INIT;
     private Disposable disposable;
+    private String mAccion=Utils.ACTION_CLOSE;
+
     @Override
     public void onCreate() {
         Log.i(TAG, "onCreate: eco");
@@ -65,13 +69,6 @@ public class ServiceTTS extends Service {
         super.onCreate();
     }
 
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        Log.i(TAG, "onBind: eco");
-        return null;
-    }
-
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(TAG, "onStartCommand: eco");
@@ -82,48 +79,48 @@ public class ServiceTTS extends Service {
         }
         String accion=intent.getAction();
         if(book==null) {
-                book = rdb.bookDAO().getBookById(intent.getExtras().getInt("id"));
-                uri = Uri.parse(book.getUri());
+            book = rdb.bookDAO().getBookById(intent.getExtras().getInt("id"));
+            uri = Uri.parse(book.getUri());
         }
-
         tomarAccion(accion,intent.getExtras());
-        //startForeground(1, notificacion());
         return START_NOT_STICKY;
     }
 
     private void tomarAccion(String accion, Bundle bundle) {
+        Log.i(TAG, "tomarAccion: Inicio");
         if(accion!=null&&!accion.equals(""))
         switch (accion){
             case Utils.ACTION_START:{
-                Log.i(TAG, "Received start Intent ");
+                Log.i(TAG, "ACTION_START Received start Intent ");
                 //mStateService = Statics.STATE_SERVICE.PREPARE;
-                startForeground(Utils.NOTIFICATION_ID_FOREGROUND_SERVICE, notificacion());
+                startForeground(Utils.NOTIFICATION_ID_FOREGROUND_SERVICE, notificacion(accion));
                 //destroyPlayer();
                 //initPlayer();
                 break;
             }
             case Utils.ACTION_PREV:{
-                startForeground(Utils.NOTIFICATION_ID_FOREGROUND_SERVICE, notificacion());
+                startForeground(Utils.NOTIFICATION_ID_FOREGROUND_SERVICE, notificacion(accion));
                 prev();
                 break;
             }
             case Utils.ACTION_PLAY:{
-                startForeground(Utils.NOTIFICATION_ID_FOREGROUND_SERVICE, notificacion());
-                speakBook(book.getPageTag()+1);
+                //startForeground(Utils.NOTIFICATION_ID_FOREGROUND_SERVICE, notificacion(accion));//enviado a speakBook
+                speakBook(book.getPageTagRead());
                 break;
             }
-            case Utils.ACTION_PAUSE:{
-                startForeground(Utils.NOTIFICATION_ID_FOREGROUND_SERVICE, notificacion());
-                stopSpeak();
+            case Utils.ACTION_PLAYING:{
+                //startForeground(Utils.NOTIFICATION_ID_FOREGROUND_SERVICE, notificacion(accion));//solo para atualizar el progres bar
+                //speakBook(book.getPageTagRead());//#que hacer?
+                Log.i(TAG, "tomarAccion: ACTION_PLAYING echo");
                 break;
             }
             case Utils.ACTION_STOP:{
-                startForeground(Utils.NOTIFICATION_ID_FOREGROUND_SERVICE, notificacion());
+                startForeground(Utils.NOTIFICATION_ID_FOREGROUND_SERVICE, notificacion(accion));
                 stopSpeak();
                 break;
             }
             case Utils.ACTION_NEX:{
-                startForeground(Utils.NOTIFICATION_ID_FOREGROUND_SERVICE, notificacion());
+                startForeground(Utils.NOTIFICATION_ID_FOREGROUND_SERVICE, notificacion(accion));
                 next();
                 break;
             }
@@ -141,16 +138,16 @@ public class ServiceTTS extends Service {
         }
     }
 
+    //region controles
     private void speakBook(int numPage) {
         Log.i(TAG, "speakBook: num: " + numPage);
         Log.i(TAG, "speakBook: hilo: "+Thread.currentThread().getName());
-
+        startForeground(Utils.NOTIFICATION_ID_FOREGROUND_SERVICE, notificacion(Utils.ACTION_PLAY));
         try {
             if (textToSpeech.isSpeaking()) {
                 stopSpeak();
             }
             InputStream i = getContentResolver().openInputStream(uri);
-
             Observable.create(new ObservableOnSubscribe<String>() {
                 @Override
                 public void subscribe(@NonNull ObservableEmitter<String> emitter) throws Throwable {
@@ -164,95 +161,57 @@ public class ServiceTTS extends Service {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(new Observer<String>() {
                 String txt="";
-                @Override
-                public void onSubscribe(@NonNull Disposable d) {
-                    disposable=d;
-                }
-
-                @Override
-                public void onNext(String s) {
-                    txt=s;
-                }
-
-                @Override
-                public void onError(@NonNull Throwable e) {
-
-                }
-
-                @Override
-                public void onComplete() {
-                    Log.i(TAG, "onComplete: hilo"+Thread.currentThread().getName());
+                @Override public void onSubscribe(@NonNull Disposable d){disposable=d;}
+                @Override public void onNext(String s) { txt=s; }
+                @Override public void onError(@NonNull Throwable e) {}
+                @Override public void onComplete() {
+                    Log.i(TAG, "onComplete: hilo "+Thread.currentThread().getName());
                     speakTxtNumPage(txt,numPage);
                 }
             });
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) {e.printStackTrace();}
     }
 
     private void speakTxtNumPage(String txt, int numPage){
         if(txt.trim().equals("")) txt ="pagina "+numPage;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             int r=textToSpeech.speak(txt, TextToSpeech.QUEUE_FLUSH, null, String.valueOf(numPage));
-            Log.i(TAG, "speakTxtNumPage: resultado speak"+r);
-            if( 0<r)
-                stateSpeak = Utils.STATE_PLAYING;
+            Log.i(TAG, "speakTxtNumPage: resultado speak "+r);
+            //if( r==0 )stateSpeak = Utils.STATE_PLAYING; boorar xq ya lo ago en onStart
         }else {
             //todo:agregar esto para version previas a lolipop
             int r=textToSpeech.speak(txt, TextToSpeech.QUEUE_FLUSH, null);
-            Log.i(TAG, "speakTxtNumPage: resultado speak deprecated"+r);
-            if ( 0<r )
-                stateSpeak = Utils.STATE_PLAYING;
+            Log.i(TAG, "speakTxtNumPage: resultado speak deprecated "+r);
+            //if ( r==0 )stateSpeak = Utils.STATE_PLAYING;
         }
+
+        //Intent IPlayIntent = new Intent(getContext(), ServiceTTS.class);
+        //IPlayIntent.setAction(Utils.ACTION_PLAY);
+        //PendingIntent IPendingPlayIntent = PendingIntent.getService(getContext(), 0, IPlayIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        //ContextCompat.startForegroundService(getContext(), IPlayIntent);
+        startForeground(Utils.NOTIFICATION_ID_FOREGROUND_SERVICE,notificacion(Utils.ACTION_PLAYING));
     }
 
-    /*
-    private Observer<String> getObserver() {
-        return new Observer<String>() {
-            String txt="";
-            @Override
-            public void onSubscribe(@NonNull Disposable d) {
-                disposable=d;
-            }
-
-            @Override
-            public void onNext(String s) {
-                txt=s;
-            }
-
-            @Override
-            public void onError(@NonNull Throwable e) {
-
-            }
-
-            @Override
-            public void onComplete() {
-                if(txt.trim().equals("")) txt ="pagina "+numPage;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    textToSpeech.speak(txt, TextToSpeech.QUEUE_FLUSH, null, String.valueOf(numPage));
-                    //**stadoSpeak = StadoSpeak.playin;
-                    stateSpeak = Utils.STATE_PLAYING;
-                }
-            }
-        };
-    }*/
-
     public void prev(){
-        book.decPageTag1();
+         book.decPageTag1();
         //todo:validar in<pages
         rdb.bookDAO().updateBook(book);
-        speakBook(book.getPageTag()+1);
-        Log.i(TAG +" ini ","done");
+        if(book.getPageTag()>=0) {
+            speakBook(book.getPageTagRead());
+            //startForeground(Utils.NOTIFICATION_ID_FOREGROUND_SERVICE,notificacion(Utils.ACTION_PLAY));
+        }
+        Log.i(TAG," ini prev done");
     }
 
     public void next(){
         book.incPageTag1();
         rdb.bookDAO().updateBook(book);
         if(book.isUnfinished()) {
+            Log.i(TAG, "xxx next done: if entro");
             speakBook(book.getPageTagRead());
+            //startForeground(Utils.NOTIFICATION_ID_FOREGROUND_SERVICE,notificacion(Utils.ACTION_PLAYING));
         }
-        Log.i(TAG +" ini ","done");
+        Log.i(TAG,"xxx ini next done");
     }
 
     private void stopSpeak(){
@@ -262,8 +221,9 @@ public class ServiceTTS extends Service {
         textToSpeech.stop();
         //textToSpeech.shutdown();//stop();
     }
+    //endregion
 
-    private Notification notificacion(){
+    private Notification notificacion(String accion){
         Intent notificationIntent = new Intent(this, MainActivity.class);
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
             notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -280,9 +240,9 @@ public class ServiceTTS extends Service {
         IPlayIntent.setAction(Utils.ACTION_PLAY);
         PendingIntent IPendingPlayIntent = PendingIntent.getService(this, 0, IPlayIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        Intent IPauseIntent = new Intent(this, ServiceTTS.class);
-        IPauseIntent.setAction(Utils.ACTION_PAUSE);
-        PendingIntent IPendingPauseIntent = PendingIntent.getService(this, 0, IPauseIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Intent IPlayingIntent = new Intent(this, ServiceTTS.class);
+        IPlayingIntent.setAction(Utils.ACTION_PLAYING);
+        PendingIntent IPendingPlayingIntent = PendingIntent.getService(this, 0, IPlayingIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         Intent IStopIntent = new Intent(this, ServiceTTS.class);
         IStopIntent.setAction(Utils.ACTION_STOP);
@@ -302,8 +262,18 @@ public class ServiceTTS extends Service {
         remoteViews_NotificationLayout.setTextViewText(R.id.tv_notif_page_text, String.valueOf(book.getPageTag()));
         remoteViews_NotificationLayout.setTextViewText(R.id.tv_notif_titulo, book.getTitulo());
         remoteViews_NotificationLayout.setOnClickPendingIntent(R.id.bt_notif_prev, IPendingPrevIntent);
+        if(accion.equals(Utils.ACTION_PLAY)) {
+            Log.i(TAG, "notificacion: es play: visible");
+            remoteViews_NotificationLayout.setViewVisibility(R.id.pb_notif_wait, View.VISIBLE);
+        }else{
+            Log.i(TAG, "notificacion: No es play: Gone");
+            remoteViews_NotificationLayout.setViewVisibility(R.id.pb_notif_wait, View.GONE); }
+        if(accion.equals(Utils.ACTION_START)){
+            Log.i(TAG, "notificacion: cambia boton");
+            remoteViews_NotificationLayout.setViewVisibility(R.id.bt_notif_stop, View.GONE);
+        }
         remoteViews_NotificationLayout.setOnClickPendingIntent(R.id.bt_notif_play, IPendingPlayIntent);
-        remoteViews_NotificationLayout.setOnClickPendingIntent(R.id.bt_notif_pause, IPendingPauseIntent);
+        //remoteViews_NotificationLayout.setOnClickPendingIntent(R.id.bt_notif_play, IPendingPlayingIntent);//#esto debe ser al hacer play
         remoteViews_NotificationLayout.setOnClickPendingIntent(R.id.bt_notif_stop, IPendingStopIntent);
         remoteViews_NotificationLayout.setOnClickPendingIntent(R.id.bt_notif_next, IPendingNextIntent);
         remoteViews_NotificationLayout.setOnClickPendingIntent(R.id.bt_notif_close, IPendingCloseIntent);
@@ -320,8 +290,6 @@ public class ServiceTTS extends Service {
 
         } else if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {*/
 
-
-
         notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Example Service")
                 .setContentText("Texto")
@@ -330,7 +298,6 @@ public class ServiceTTS extends Service {
                 .setCustomContentView(remoteViews_NotificationLayout)
                 .build();
         //notificationLayout.setOnClickPendingIntent();
-
         //}
         // Notification ID cannot be 0.
         return notification;
@@ -340,6 +307,7 @@ public class ServiceTTS extends Service {
         Log.i(TAG, "stripText hilo: "+Thread.currentThread().getName());
         String textParsed = "";
         PDDocument document = null;
+        //stateSpeak=Utils.S
         try {
             document = PDDocument.load(pdfInputStream);
             PDFRenderer pdfRender=new PDFRenderer(document);
@@ -358,66 +326,61 @@ public class ServiceTTS extends Service {
             try {
                 if (document != null) document.close();
             }
-            catch (IOException e)
-            {
+            catch (IOException e) {
                 Log.e("PdfBox-Android-Sample", "Exception thrown while closing document", e);
             }
         }
         return textParsed;
     }
 
-    public byte getStateSpeak() {
-        return stateSpeak;
-    }
-
     private TextToSpeech.OnInitListener getOnIntListener(){
         return new TextToSpeech.OnInitListener(){
             @Override
-            protected void finalize() throws Throwable {
-                super.finalize();
-                Log.i(TAG +"ini ","Finalizo textToSpeech");
-            }
-
-            @Override
             public void onInit(int i) {
-                Log.i(TAG +"ini ","i = "+i);
+                Log.i(TAG," onInit i = "+i);
                 textToSpeech.setLanguage(Locale.getDefault());
                 /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     Log.i(TAG, "onInit: "+textToSpeech.getVoices().toString());
                 }*/
             }
-        } ;
-
+            @Override
+            protected void finalize() throws Throwable {
+                super.finalize();//cuando le das shutdown creo
+                Log.i(TAG, " Finalizo textToSpeech");
+            }
+        };
     }
 
     private UtteranceProgressListener getUtteranceProgressListener(){
         return new UtteranceProgressListener() {
             @Override
             public void onStart(String s) {
-                Log.i(TAG +" ini ","Start");
+                Log.i(TAG," onStart");
                 stateSpeak = Utils.STATE_PLAYING;
                 /*todo:actualizar UI
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         getMainActivity().getActivityMainBinding().btAppbarBotpage.setText(String.valueOf(book.getPageTag()+1));
-
                     }
                 });*/
             }
-
             @Override
             public void onDone(String s) {
+                Log.i(TAG, "onDone: ");
                 if (stateSpeak!= Utils.STATE_STOPED) {
                     next();
                 }
             }
-
             @Override
             public void onError(String s) {
-                Log.i(TAG +" ini ","error:"+s);
+                Log.i(TAG," onError: "+s);
             }
         };
+    }
+
+    public byte getStateSpeak() {
+        return stateSpeak;
     }
 
     @Override
@@ -425,4 +388,11 @@ public class ServiceTTS extends Service {
         if(disposable!=null)disposable.dispose();
         super.onDestroy();
     }
+
+    @Nullable @Override
+    public IBinder onBind(Intent intent) {
+        Log.i(TAG, "onBind: echo");
+        return null;
+    }
+
 }

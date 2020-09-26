@@ -36,7 +36,9 @@ import androidx.fragment.app.Fragment;
 import androidx.room.Room;
 
 import com.github.barteksc.pdfviewer.PDFView;
+import com.github.barteksc.pdfviewer.listener.OnErrorListener;
 import com.github.barteksc.pdfviewer.listener.OnPageChangeListener;
+import com.github.barteksc.pdfviewer.listener.OnPageErrorListener;
 import com.github.barteksc.pdfviewer.listener.OnTapListener;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.rendering.PDFRenderer;
@@ -135,6 +137,18 @@ public class SecondFragment extends Fragment {
                         binding.tvBookpdfPage.setText(String .valueOf(page+1));
                     }
                 })
+                .onError(new OnErrorListener() {
+                    @Override
+                    public void onError(Throwable t) {
+                        Log.e(TAG, "2do onError: "+t.getMessage());
+                    }
+                })
+                .onPageError(new OnPageErrorListener() {
+                    @Override
+                    public void onPageError(int page, Throwable t) {
+                        Log.e(TAG, "onPageError: page: "+page+" msg: "+t.getMessage());
+                    }
+                })
                 .load();
         getMainActivity().binding.flMainPageicon.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -212,7 +226,7 @@ public class SecondFragment extends Fragment {
                 ContextCompat.startForegroundService(getContext(), IPlayIntent);
             }
         });
-        binding.btSecPause.setOnClickListener(new View.OnClickListener() {
+        /*binding.btSecPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 //stopSpeak();
@@ -221,7 +235,7 @@ public class SecondFragment extends Fragment {
                 //PendingIntent IPendingPauseIntent = PendingIntent.getService(getContext(), 0, IPauseIntent, PendingIntent.FLAG_UPDATE_CURRENT);
                 ContextCompat.startForegroundService(getContext(), IPauseIntent);
             }
-        });
+        });*/
         binding.btSecStop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
