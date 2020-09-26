@@ -218,8 +218,11 @@ public class ServiceTTS extends Service {
         Log.i(TAG, "stopSpeak: aver si esto es de tu talla");
         //**stadoSpeak= StadoSpeak.stoped;
         stateSpeak = Utils.STATE_STOPED;
-        textToSpeech.stop();
-        //textToSpeech.shutdown();//stop();
+        if (textToSpeech.isSpeaking()) {
+            textToSpeech.stop();
+        }else{
+            textToSpeech.shutdown();//stop();
+        }
     }
     //endregion
 
@@ -259,7 +262,7 @@ public class ServiceTTS extends Service {
         RemoteViews remoteViews_NotificationLayout = new RemoteViews(getPackageName(), R.layout.notification_small);
 
         //remoteViews_NotificationLayout.setTextColor(R.id.tv_notif_page_text, Color.argb(0,255,0,0));
-        remoteViews_NotificationLayout.setTextViewText(R.id.tv_notif_page_text, String.valueOf(book.getPageTag()));
+        remoteViews_NotificationLayout.setTextViewText(R.id.tv_notif_page_text, String.valueOf(book.getPageTagRead()));
         remoteViews_NotificationLayout.setTextViewText(R.id.tv_notif_titulo, book.getTitulo());
         remoteViews_NotificationLayout.setOnClickPendingIntent(R.id.bt_notif_prev, IPendingPrevIntent);
         if(accion.equals(Utils.ACTION_PLAY)) {
@@ -268,10 +271,6 @@ public class ServiceTTS extends Service {
         }else{
             Log.i(TAG, "notificacion: No es play: Gone");
             remoteViews_NotificationLayout.setViewVisibility(R.id.pb_notif_wait, View.GONE); }
-        if(accion.equals(Utils.ACTION_START)){
-            Log.i(TAG, "notificacion: cambia boton");
-            remoteViews_NotificationLayout.setViewVisibility(R.id.bt_notif_stop, View.GONE);
-        }
         remoteViews_NotificationLayout.setOnClickPendingIntent(R.id.bt_notif_play, IPendingPlayIntent);
         //remoteViews_NotificationLayout.setOnClickPendingIntent(R.id.bt_notif_play, IPendingPlayingIntent);//#esto debe ser al hacer play
         remoteViews_NotificationLayout.setOnClickPendingIntent(R.id.bt_notif_stop, IPendingStopIntent);

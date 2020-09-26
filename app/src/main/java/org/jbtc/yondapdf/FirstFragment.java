@@ -3,11 +3,8 @@ package org.jbtc.yondapdf;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-import android.renderscript.ScriptGroup;
-import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -15,8 +12,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -26,7 +21,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.rendering.PDFRenderer;
 
@@ -56,12 +50,10 @@ public class FirstFragment extends Fragment {
     //region properties
     private static final String dbName = "bookslightnovel";
     private static final String TAG = "iFirstf";
-    //recicler
-    //private RecyclerView recyclerView;
-    private AdapterBook mAdapter;
     private RecyclerView.LayoutManager layoutManager;
     private FragmentFirstBinding binding;
     private RoomDatabaseBooksLN rdb;
+    private AdapterBook mAdapter;
     private Disposable disposable;
     private ActionMode actionMode;
     //endregion
@@ -85,62 +77,13 @@ public class FirstFragment extends Fragment {
                 startActivityForResult(intent, 1);
             }
         });
-        binding.fab.setOnLongClickListener(new View.OnLongClickListener() {
-            @SuppressLint("RestrictedApi")
-            @Override
-            public boolean onLongClick(View view) {
-                actionMode = getMainActivity().startSupportActionMode(actionModeCallback);
-            return false;
-            }
-        });
 
         getActionBarFromMainActivity().setTitle(getResources().getString(R.string.app_name));
 
         setupRecycler();
 
-
-
         return binding.getRoot();
     }
-
-    private ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
-
-        // Called when the action mode is created; startActionMode() was called
-        @Override
-        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-            // Inflate a menu resource providing context menu items
-            MenuInflater inflater = mode.getMenuInflater();
-            inflater.inflate(R.menu.menu_select_book, menu);
-            return true;
-        }
-
-        // Called each time the action mode is shown. Always called after onCreateActionMode, but
-        // may be called multiple times if the mode is invalidated.
-        @Override
-        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-            return false; // Return false if nothing is done
-        }
-
-        // Called when the user selects a contextual menu item
-        @Override
-        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-            /*switch (item.getItemId()) {
-                case R.id.menu_share:
-                    shareCurrentItem();
-                    mode.finish(); // Action picked, so close the CAB
-                    return true;
-                default:
-                    return false;
-            }*/
-            return false;
-        }
-
-        // Called when the user exits the action mode
-        @Override
-        public void onDestroyActionMode(ActionMode mode) {
-            actionMode = null;
-        }
-    };
 
     private void setupRecycler() {
         //recyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
@@ -153,14 +96,18 @@ public class FirstFragment extends Fragment {
         binding.rvListBook.setLayoutManager(layoutManager);
         // specify an adapter (see also next example)
         List<Book> items = rdb.bookDAO().getAll();
-        mAdapter = new AdapterBook(items);
-        mAdapter.setoCvListener(new AdapterBook.OnClickCardViewListener() {
+        mAdapter = new AdapterBook(items,this);
+        mAdapter.setOnClickVListener(new AdapterBook.OnClickCardViewListener() {
             @Override
             public void OnClickCardView(Book book) {
                 Bundle b = new Bundle();
                 b.putInt("id",book.getId());
                 NavHostFragment.findNavController(FirstFragment.this)
                         .navigate(R.id.action_FirstFragment_to_SecondFragment,b);
+            }
+            @Override
+            public void OnLongClickCardView() {
+                actionMode = getMainActivity().startSupportActionMode(actionModeCallback);
             }
         });
         binding.rvListBook.setAdapter(mAdapter);
@@ -181,7 +128,6 @@ public class FirstFragment extends Fragment {
         getMainActivity().getActivityMainBinding().flMainPageicon.setVisibility(View.GONE);
         setHasOptionsMenu(true);
     }
-
 
     @Override
     public void onPrepareOptionsMenu(@NonNull Menu menu) {
@@ -343,6 +289,54 @@ public class FirstFragment extends Fragment {
                 mAdapter.updateList(rdb.bookDAO().getAll());
             }
         };
+    }
+
+    private ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
+
+        // Called when the action mode is created; startActionMode() was called
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            // Inflate a menu resource providing context menu items
+            MenuInflater inflater = mode.getMenuInflater();
+            inflater.inflate(R.menu.menu_select_book, menu);
+
+            return true;
+        }
+
+        // Called each time the action mode is shown. Always called after onCreateActionMode, but
+        // may be called multiple times if the mode is invalidated.
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+
+            mAdapter.notifyDataSetChanged();
+            return true; // Return false if nothing is done
+        }
+
+        // Called when the user selects a contextual menu item
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            /*switch (item.getItemId()) {
+                case R.id.menu_share:
+                    shareCurrentItem();
+                    mode.finish(); // Action picked, so close the CAB
+                    return true;
+                default:
+                    return false;
+            }*/
+            return false;
+        }
+
+        // Called when the user exits the action mode
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+            actionMode = null;
+            mAdapter.cleanItemsSelected();
+            mAdapter.notifyDataSetChanged();
+        }
+    };
+
+    public boolean isActionModeActive(){
+        return actionMode!=null;
     }
 
     @NonNull

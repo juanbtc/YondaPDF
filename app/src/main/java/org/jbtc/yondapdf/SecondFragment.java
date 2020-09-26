@@ -90,14 +90,11 @@ public class SecondFragment extends Fragment {
         book = rdb.bookDAO().getBookById(id);
         uri = Uri.parse(book.getUri());
 
-
         setup();
 
         setupControlPlayer();
         //ServiceTTS.getState();
         setupForeground(id);
-
-
 
         View view = binding.getRoot();
         return view;
@@ -190,8 +187,6 @@ public class SecondFragment extends Fragment {
         getMainActivity().setTextSizeToolbar(20f,"2do onPrepare");
         //menu.findItem(R.id.action_botspeak).setVisible(false);
     }
-
-
 
     private ActionBar getActionBarFromMainActivity() {
         if(getActivity() instanceof MainActivity){

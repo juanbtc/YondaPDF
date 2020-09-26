@@ -4,7 +4,6 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
-import androidx.room.Query;
 
 @Entity(tableName = "book")
 public class Book {
@@ -20,6 +19,8 @@ public class Book {
     int pages;
     @ColumnInfo(name = "bitmap")
     String bitmap;
+    @Ignore
+    boolean checked;
 
     public Book(String uri, String titulo, int pageTag, int pages, String bitmap) {
         this.uri = uri;
@@ -27,6 +28,7 @@ public class Book {
         this.pageTag = pageTag;
         this.pages = pages;
         this.bitmap = bitmap;
+        checked=false;
     }
 
     @Ignore
@@ -57,7 +59,10 @@ public class Book {
 
     @Ignore
     public void incPageTag1(){
-        this.pageTag++;
+        int n=pageTag+1;
+        if(n<=pages) {
+            pageTag=n;
+        }
     }
 
     @Ignore
@@ -101,6 +106,17 @@ public class Book {
 
     @Ignore
     public void decPageTag1() {
-        this.pageTag--;
+        int n=pageTag-1;
+        if (n>=0){
+            pageTag=n;
+        }
+    }
+
+    public boolean isChecked() {
+        return checked;
+    }
+
+    public void setChecked(boolean checked) {
+        this.checked = checked;
     }
 }

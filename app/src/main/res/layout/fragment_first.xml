@@ -12,8 +12,7 @@
         android:id="@+id/rv_list_book"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scrollbars="vertical"
-        android:paddingHorizontal="5dp"/>
+        android:scrollbars="vertical"/>
 
     <ProgressBar
         android:id="@+id/pb_first_wait"
