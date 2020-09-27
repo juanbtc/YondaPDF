@@ -25,6 +25,7 @@ import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.jbtc.yondapdf.database.RoomDatabaseBooksLN;
 import org.jbtc.yondapdf.databinding.ActivityMainBinding;
@@ -33,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String PRIMARY = "primary";
     private static final String dbName = "bookslightnovel";
+    private static final String TAG = "iMain";
 
     NavController navController;
     AssetManager assetManager;
@@ -64,8 +66,13 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+
+
+
+    /*
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        Log.i(TAG, "onCreateOptionsMenu: ");
         //Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
 
@@ -77,12 +84,13 @@ public class MainActivity extends AppCompatActivity {
         //searchView.setIconifiedByDefault(false); // Do not iconify the widget; expand it by default
 
                 //menu.findItem(R.id.action_botspeak).setVisible(false);
-        Log.i("as21", "onCreateOptionsMenu: paso por menu del mainactivity");
+        //Log.i("as21", "onCreateOptionsMenu: paso por menu del mainactivity");
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        Log.i(TAG, "onOptionsItemSelected: ");
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
@@ -90,20 +98,28 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        /*switch (id){
-            case R.id.action_settings: {
-                return true;
-            }
+        switch (id){
             case R.id.action_novelas: {
-                Toast.makeText(this,"de main activity",Toast.LENGTH_LONG).show();
+                Log.i(TAG, "onOptionsItemSelected: action_novelas : de main activity");
+                //Toast.makeText(this,"action_novelas : de main activity",Toast.LENGTH_LONG).show();
                 break;
             }
             default:
                 break;
-        }*/
+        }
 
         return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        Log.i(TAG, "onPrepareOptionsMenu: ");
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    */
+
+
 
     public void setTextSizeToolbar(float sp, String source){
         Toolbar toolbar = findViewById(R.id.toolbar);

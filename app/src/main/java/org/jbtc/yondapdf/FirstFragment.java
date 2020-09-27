@@ -12,9 +12,11 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -129,32 +131,34 @@ public class FirstFragment extends Fragment {
         setHasOptionsMenu(true);
     }
 
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        Log.i(TAG, "onCreateOptionsMenu: ");
+        //menu.findItem(R.id.action_botspeak).setVisible(false);
+        //menu.clear();
+        inflater.inflate(R.menu.menu_main, menu);
+        SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+        getMainActivity().setTextSizeToolbar(30f,"1er");
+    }
+
     @Override
     public void onPrepareOptionsMenu(@NonNull Menu menu) {
         super.onPrepareOptionsMenu(menu);
+        Log.i(TAG, "onPrepareOptionsMenu: ");
         //menu.findItem(R.id.action_botspeak).setVisible(false);
-        getMainActivity().setTextSizeToolbar(30f,"1er");
-    }
-    /*
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        //menu.findItem(R.id.action_botspeak).setVisible(false);
-        menu.clear();
-        inflater.inflate(R.menu.menu_main, menu);
-        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        Log.i(TAG, "onOptionsItemSelected: ");
         int id = item.getItemId();
-
         //noinspection SimplifiableIfStatement
         switch (id){
-            case R.id.action_search: {
-                return true;
-            }
-            case R.id.action_novelas: {
-                Toast.makeText(getContext(),"accion completada desde fragment",Toast.LENGTH_LONG).show();
+            case R.id.action_selection: {
+                Log.i(TAG, "onOptionsItemSelected: action_novelas completada desde fragment");
+                //Toast.makeText(getContext(),"accion completada desde fragment",Toast.LENGTH_LONG).show();
                 break;
             }
             default:
@@ -162,7 +166,11 @@ public class FirstFragment extends Fragment {
         }
         return super.onOptionsItemSelected(item);
     }
-    */
+    
+    
+    
+    
+    
 
     @Override
     public void onDestroyView() {
@@ -307,8 +315,7 @@ public class FirstFragment extends Fragment {
         // may be called multiple times if the mode is invalidated.
         @Override
         public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-
-            mAdapter.notifyDataSetChanged();
+            Log.i(TAG, "onPrepareActionMode:  notifi changed");
             return true; // Return false if nothing is done
         }
 

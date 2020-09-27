@@ -173,6 +173,8 @@ public class SecondFragment extends Fragment {
         setHasOptionsMenu(true);
     }
 
+
+
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         //inflater.inflate(R.menu.menu_main, menu);
@@ -187,6 +189,9 @@ public class SecondFragment extends Fragment {
         getMainActivity().setTextSizeToolbar(20f,"2do onPrepare");
         //menu.findItem(R.id.action_botspeak).setVisible(false);
     }
+
+
+
 
     private ActionBar getActionBarFromMainActivity() {
         if(getActivity() instanceof MainActivity){

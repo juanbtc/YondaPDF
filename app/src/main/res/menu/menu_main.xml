@@ -12,8 +12,12 @@
         app:showAsAction="always|collapseActionView" />
     <!--    app:itemIconSize="20dp"-->
     <item
-        android:id="@+id/action_novelas"
+        android:id="@+id/action_selection"
         android:orderInCategory="120"
-        android:title="Novelas" />
+        android:title="Seleccionar" />
+    <item
+        android:id="@+id/action_config"
+        android:orderInCategory="130"
+        android:title="configuracion" />
 
 </menu>

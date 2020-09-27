@@ -48,41 +48,46 @@ public class AdapterBook extends Adapter<AdapterBook.ViewHolderBook> {
         holder.tvName.setText(items.get(position).getTitulo());
         holder.tvPages.setText(String.valueOf(items.get(position).getPages()));
         holder.tvTag.setText(String.valueOf(items.get(position).getPageTagRead()));
-        Bitmap bitmap = BitmapFactory.decodeFile(items.get(position).getBitmap());
+            Bitmap bitmap = BitmapFactory.decodeFile(items.get(position).getBitmap());
         holder.ivBitmap.setImageBitmap(bitmap);
 
-        if (getFirstFragment().isActionModeActive()) {
+        if(getFirstFragment().isActionModeActive()){
+            holder.cbSelect.setChecked(items.get(position).isChecked());
             holder.cbSelect.setVisibility(View.VISIBLE);
-            holder.v.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Log.i(TAG, "onClick: 7854 card checked: "+items.get(position).isChecked());
-                    holder.cbSelect.setVisibility(View.VISIBLE);
-                    setChecked(holder,position);
-                }
-            });
-        } else {
+        }else{
             holder.cbSelect.setVisibility(View.GONE);
-            holder.v.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (oCvListener != null) oCvListener.OnClickCardView(items.get(position));
+        }
+
+        holder.v.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (getFirstFragment().isActionModeActive()) {
+                    Log.i(TAG, "onClick: 7854 card checked: "+items.get(position).isChecked());
+                    //holder.cbSelect.setVisibility(View.VISIBLE);
+                    setChecked(holder,position);
+                }else {
+                    //holder.cbSelect.setVisibility(View.GONE);
+                    if (oCvListener != null) oCvListener.OnClickCardView(items.get(position));//habre el PDF
                 }
-            });
-            holder.v.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View view) {
+            }
+        });
+        holder.v.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                if (!getFirstFragment().isActionModeActive()) {
                     if (oCvListener != null) {
-                        holder.cbSelect.setVisibility(View.VISIBLE);
-                        oCvListener.OnLongClickCardView();
-                        Log.i(TAG, "onClick: 7855 card long checked: "+items.get(position).isChecked());
-                        setChecked(holder,position);
+                        Log.i(TAG, "onClick: 7855 card long checked: " + items.get(position).isChecked());
+                        oCvListener.OnLongClickCardView();//activa el actionMode
+                        //holder.cbSelect.setVisibility(View.VISIBLE);
+                        setChecked(holder, position);
+                        notifyDataSetChanged();
                         return true;
                     }
-                    return false;
                 }
-            });
-        }
+                return false;
+            }
+        });
+
     }
 
     @Override
