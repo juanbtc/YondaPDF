@@ -8,6 +8,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -18,17 +20,19 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
 import org.jbtc.yondapdf.FirstFragment;
 import org.jbtc.yondapdf.R;
+import org.jbtc.yondapdf.database.RoomDatabaseBooksLN;
 import org.jbtc.yondapdf.entidad.Book;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class AdapterBook extends Adapter<AdapterBook.ViewHolderBook> {
+public class AdapterBook extends Adapter<AdapterBook.ViewHolderBook> implements Filterable {
 
     private static final String TAG = "iAdapterBook";
-    List<Book> items;
-    List<Book> itemsSelected;
-    Fragment f;
+    private List<Book> items;
+    private List<Book> itemsSelected;
+    private Fragment f;
+
     public AdapterBook(List<Book> items, Fragment f) {
         this.items = items;
         this.itemsSelected = new ArrayList<>();
@@ -80,7 +84,7 @@ public class AdapterBook extends Adapter<AdapterBook.ViewHolderBook> {
                         oCvListener.OnLongClickCardView();//activa el actionMode
                         //holder.cbSelect.setVisibility(View.VISIBLE);
                         setChecked(holder, position);
-                        notifyDataSetChanged();
+                        //notifyDataSetChanged();
                         return true;
                     }
                 }
@@ -93,6 +97,13 @@ public class AdapterBook extends Adapter<AdapterBook.ViewHolderBook> {
     @Override
     public int getItemCount() {
         return items.size();
+    }
+
+    public void deleteSelection(RoomDatabaseBooksLN rdb){
+        if( rdb.bookDAO().deleteAll(itemsSelected)>0 ) {
+            items.removeAll(itemsSelected);
+            notifyDataSetChanged();
+        }
     }
 
     private void setChecked(ViewHolderBook holder,int position){
@@ -123,9 +134,48 @@ public class AdapterBook extends Adapter<AdapterBook.ViewHolderBook> {
     }
 
     public void updateList(List<Book> books){
+        Log.i(TAG, "updateList: ");
         items = books;
         notifyDataSetChanged();
     }
+
+    public void updateListNoRefresh(List<Book> books){
+        Log.i(TAG, "updateListNoRefresh: ");
+        items = books;
+    }
+    
+    @Override
+    public Filter getFilter(){
+        return filtro;
+    }
+
+    private Filter filtro = new Filter() {
+        @Override
+        protected FilterResults performFiltering(CharSequence query) {
+            //List<Book> itemsCopy = new ArrayList<>(items);
+            List<Book> itemResult=new ArrayList<Book>();
+            if(query==null||query.length()<1){
+                itemResult.addAll(items);
+            }else{
+                String consulta = query.toString().toLowerCase().trim();
+                for (Book b:items){
+                    if(b.getTitulo().toLowerCase().trim().contains(consulta)){
+                        itemResult.add(b);
+                    }
+                }
+            }
+            FilterResults filtroResultado = new FilterResults();
+            filtroResultado.values = itemResult;
+            return filtroResultado;
+        }
+
+        @Override
+        protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+            items.clear();
+            items.addAll( (List<Book>)filterResults.values );
+            notifyDataSetChanged();
+        }
+    };
 
     public class ViewHolderBook extends ViewHolder {
         // each data item is just a string in this case
@@ -154,4 +204,5 @@ public class AdapterBook extends Adapter<AdapterBook.ViewHolderBook> {
     public void setOnClickVListener(OnClickCardViewListener oCvListener) {
         this.oCvListener = oCvListener;
     }
+
 }

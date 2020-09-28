@@ -78,11 +78,14 @@ public class ServiceTTS extends Service {
             return START_NOT_STICKY;
         }
         String accion=intent.getAction();
-        if(book==null) {
+
+        try{
             book = rdb.bookDAO().getBookById(intent.getExtras().getInt("id"));
             uri = Uri.parse(book.getUri());
-        }
+        }catch (Exception e){}
+
         tomarAccion(accion,intent.getExtras());
+
         return START_NOT_STICKY;
     }
 
@@ -115,8 +118,9 @@ public class ServiceTTS extends Service {
                 break;
             }
             case Utils.ACTION_STOP:{
-                startForeground(Utils.NOTIFICATION_ID_FOREGROUND_SERVICE, notificacion(accion));
-                stopSpeak();
+                if(stopSpeak()) {
+                    startForeground(Utils.NOTIFICATION_ID_FOREGROUND_SERVICE, notificacion(accion));
+                }
                 break;
             }
             case Utils.ACTION_NEX:{
@@ -127,7 +131,7 @@ public class ServiceTTS extends Service {
             case Utils.ACTION_CLOSE:{
                 //startForeground(Utils.NOTIFICATION_ID_FOREGROUND_SERVICE, notificacion());
                 stopSpeak();
-                textToSpeech.shutdown();//todo:agregar esto a stopSpeak
+                //textToSpeech.shutdown();//todo:agregar esto a stopSpeak
                 stopForeground(true);
                 stopSelf();
                 break;
@@ -204,9 +208,9 @@ public class ServiceTTS extends Service {
     }
 
     public void next(){
-        book.incPageTag1();
-        rdb.bookDAO().updateBook(book);
-        if(book.isUnfinished()) {
+        //book.incPageTag1();
+        if(book.isPageTagInc1Unfinished()){
+            rdb.bookDAO().updateBook(book);
             Log.i(TAG, "xxx next done: if entro");
             speakBook(book.getPageTagRead());
             //startForeground(Utils.NOTIFICATION_ID_FOREGROUND_SERVICE,notificacion(Utils.ACTION_PLAYING));
@@ -214,14 +218,16 @@ public class ServiceTTS extends Service {
         Log.i(TAG,"xxx ini next done");
     }
 
-    private void stopSpeak(){
+    private boolean stopSpeak(){
         Log.i(TAG, "stopSpeak: aver si esto es de tu talla");
         //**stadoSpeak= StadoSpeak.stoped;
         stateSpeak = Utils.STATE_STOPED;
         if (textToSpeech.isSpeaking()) {
             textToSpeech.stop();
+            return true;
         }else{
-            textToSpeech.shutdown();//stop();
+            //textToSpeech.shutdown();//stop();
+            return false;
         }
     }
     //endregion
@@ -385,6 +391,7 @@ public class ServiceTTS extends Service {
     @Override
     public void onDestroy() {
         if(disposable!=null)disposable.dispose();
+        if(textToSpeech!=null)textToSpeech.shutdown();
         super.onDestroy();
     }
 

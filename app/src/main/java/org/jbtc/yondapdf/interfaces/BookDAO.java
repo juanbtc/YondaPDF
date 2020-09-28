@@ -31,10 +31,13 @@ public interface BookDAO {
     void insertBook(Book book);
 
     @Update
-    void updateBook(Book book);
+    int updateBook(Book book);
 
     @Delete
     void delete(Book book);
+
+    @Delete
+    int deleteAll(List<Book> books);
 
 
 

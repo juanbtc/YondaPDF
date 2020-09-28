@@ -22,6 +22,16 @@ public class Book {
     @Ignore
     boolean checked;
 
+    public Book() {
+        this.id=0;
+        this.uri = "";
+        this.titulo = "";
+        this.pageTag = -1;
+        this.pages = 0;
+        this.bitmap = "";
+        checked=false;
+    }
+
     public Book(String uri, String titulo, int pageTag, int pages, String bitmap) {
         this.uri = uri;
         this.titulo = titulo;
@@ -58,10 +68,13 @@ public class Book {
     }
 
     @Ignore
-    public void incPageTag1(){
+    public boolean isPageTagInc1Unfinished(){
         int n=pageTag+1;
-        if(n<=pages) {
+        if(n<pages){
             pageTag=n;
+            return true;
+        }else{
+            return false;
         }
     }
 
@@ -100,9 +113,10 @@ public class Book {
         this.titulo = titulo;
     }
 
+    /*
     public boolean isUnfinished(){
         return pageTag<pages;
-    }
+    }*/
 
     @Ignore
     public void decPageTag1() {

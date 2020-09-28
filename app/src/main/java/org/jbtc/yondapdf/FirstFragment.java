@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -76,6 +77,7 @@ public class FirstFragment extends Fragment {
                 //Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG).setAction("Action", null).show();
                 Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                 intent.setType("*/*");
+                intent.setAction(Intent.ACTION_OPEN_DOCUMENT);
                 startActivityForResult(intent, 1);
             }
         });
@@ -109,7 +111,8 @@ public class FirstFragment extends Fragment {
             }
             @Override
             public void OnLongClickCardView() {
-                actionMode = getMainActivity().startSupportActionMode(actionModeCallback);
+                activeActionMode();
+                //actionMode = getMainActivity().startSupportActionMode(actionModeCallback);
             }
         });
         binding.rvListBook.setAdapter(mAdapter);
@@ -131,7 +134,6 @@ public class FirstFragment extends Fragment {
         setHasOptionsMenu(true);
     }
 
-
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
@@ -139,8 +141,45 @@ public class FirstFragment extends Fragment {
         //menu.findItem(R.id.action_botspeak).setVisible(false);
         //menu.clear();
         inflater.inflate(R.menu.menu_main, menu);
-        SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
         getMainActivity().setTextSizeToolbar(30f,"1er");
+
+        MenuItem searchViewItem = menu.findItem(R.id.action_search);
+        searchViewItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
+            @Override
+            public boolean onMenuItemActionExpand(MenuItem menuItem) {
+                Log.i(TAG, "onMenuItemActionExpand: ");
+                return true;
+            }
+            @Override
+            public boolean onMenuItemActionCollapse(MenuItem menuItem) {
+                Log.i(TAG, "onMenuItemActionCollapse: ");
+                mAdapter.updateList(rdb.bookDAO().getAll());
+                return true;
+            }
+        });
+
+        SearchView searchView = (SearchView)searchViewItem.getActionView();
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                Log.i(TAG, "onQueryTextSubmit: ");
+                mAdapter.updateListNoRefresh(rdb.bookDAO().getAll());
+                mAdapter.getFilter().filter(query);
+                return true;
+            }
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                Log.i(TAG, "onQueryTextChange: ");
+                return false;
+            }
+        });
+        searchView.setOnSearchClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                
+            }
+        });
+
     }
 
     @Override
@@ -158,15 +197,17 @@ public class FirstFragment extends Fragment {
         switch (id){
             case R.id.action_selection: {
                 Log.i(TAG, "onOptionsItemSelected: action_novelas completada desde fragment");
-                //Toast.makeText(getContext(),"accion completada desde fragment",Toast.LENGTH_LONG).show();
-                break;
+                activeActionMode();
+                return true;
             }
-            default:
-                break;
         }
         return super.onOptionsItemSelected(item);
     }
-    
+
+    private void activeActionMode(){
+        actionMode = getMainActivity().startSupportActionMode(actionModeCallback);
+        mAdapter.notifyDataSetChanged();
+    }
     
     
     
@@ -215,7 +256,15 @@ public class FirstFragment extends Fragment {
                             @Override
                             public void subscribe(@io.reactivex.rxjava3.annotations.NonNull ObservableEmitter<Book> emitter) throws Throwable {
                                 try {
-                                    emitter.onNext(createBookFromUri(resultData.getData()));
+                                    Uri uri = resultData.getData();
+                                    final int takeFlags = resultData.getFlags()
+                                            & (Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                            | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                                    // Check for the freshest data.
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                                        getActivity().getContentResolver().takePersistableUriPermission(uri, takeFlags);
+                                    }
+                                    emitter.onNext( createBookFromUri(uri) );
                                     emitter.onComplete();
                                 }catch (Exception e){emitter.onError(e);e.printStackTrace();}
                             }
@@ -322,14 +371,13 @@ public class FirstFragment extends Fragment {
         // Called when the user selects a contextual menu item
         @Override
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-            /*switch (item.getItemId()) {
-                case R.id.menu_share:
-                    shareCurrentItem();
+            switch (item.getItemId()) {
+                case R.id.action_delete: {
+                    mAdapter.deleteSelection(rdb);
                     mode.finish(); // Action picked, so close the CAB
                     return true;
-                default:
-                    return false;
-            }*/
+                }
+            }
             return false;
         }
 

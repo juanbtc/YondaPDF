@@ -40,6 +40,7 @@ import com.github.barteksc.pdfviewer.listener.OnErrorListener;
 import com.github.barteksc.pdfviewer.listener.OnPageChangeListener;
 import com.github.barteksc.pdfviewer.listener.OnPageErrorListener;
 import com.github.barteksc.pdfviewer.listener.OnTapListener;
+import com.google.android.material.snackbar.Snackbar;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.rendering.PDFRenderer;
 import com.tom_roush.pdfbox.text.PDFTextStripper;
@@ -101,7 +102,7 @@ public class SecondFragment extends Fragment {
     }
 
     private void setupForeground(int id) {
-        //String input = "input";
+        Log.i(TAG, "setupForeground: ");
         Intent serviceIntent = new Intent(getContext(), ServiceTTS.class);
         serviceIntent.setAction(Utils.ACTION_START);
         serviceIntent.putExtra("id", id);
@@ -138,6 +139,7 @@ public class SecondFragment extends Fragment {
                     @Override
                     public void onError(Throwable t) {
                         Log.e(TAG, "2do onError: "+t.getMessage());
+                        Snackbar.make(binding.getRoot(),"Error al Cargar el Documento",Snackbar.LENGTH_LONG).show();
                     }
                 })
                 .onPageError(new OnPageErrorListener() {
@@ -270,12 +272,13 @@ public class SecondFragment extends Fragment {
         }
     }
 
+
+
     @Override
     public void onDestroy() {
         super.onDestroy();
         binding = null;
         //disposable.dispose();
-
     }
 
 }
