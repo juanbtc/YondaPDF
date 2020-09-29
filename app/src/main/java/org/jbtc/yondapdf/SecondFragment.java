@@ -145,6 +145,8 @@ public class SecondFragment extends Fragment {
                     }
                 })
                 .load();
+        //todo:eliminar imagen de la db
+        //binding.pdfView.setKeepScreenOn(true);//tal vez
         binding.tvBookpdfPage.setText(String.valueOf(binding.pdfView.getCurrentPage()));//try this
 
         getMainActivity().binding.flMainPageicon.setOnClickListener(new View.OnClickListener() {

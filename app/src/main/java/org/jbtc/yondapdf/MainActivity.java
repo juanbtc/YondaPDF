@@ -46,6 +46,8 @@ public class MainActivity extends AppCompatActivity {
     //todo:image
     //todo:progresbar
     //todo:click notification open book
+    //todo:al dar click en play en fragmente q reabra el servicio si fue cerrado
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
