@@ -3,6 +3,7 @@ package org.jbtc.yondapdf.dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -52,9 +53,10 @@ public class DialogoPageSpeech extends DialogFragment {
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        try {
+        try {//todo:borrar:salle error pero ya no lo necesito xq los ago con un setter
             listener = (NoticeDialogListener) context;
-        } catch (ClassCastException e) { e.printStackTrace(); }
+        } catch (ClassCastException e) {
+            Log.e("dialog", "onAttach: no importa este error, lo ago con un setter" );e.printStackTrace(); }
     }
 
     @Override

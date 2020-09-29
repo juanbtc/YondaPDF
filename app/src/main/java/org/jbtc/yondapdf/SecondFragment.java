@@ -33,6 +33,8 @@ import androidx.appcompat.app.ActionBar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.room.Room;
 
 import com.github.barteksc.pdfviewer.PDFView;
@@ -53,6 +55,7 @@ import org.jbtc.yondapdf.databinding.FragmentSecondBinding;
 import org.jbtc.yondapdf.dialog.DialogoPageSpeech;
 import org.jbtc.yondapdf.entidad.Book;
 import org.jbtc.yondapdf.services.ServiceTTS;
+import org.jbtc.yondapdf.viewmodel.PageTagViewModel;
 
 import java.io.File;
 import java.io.IOException;
@@ -63,7 +66,6 @@ import java.util.Locale;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.ObservableEmitter;
 import io.reactivex.rxjava3.core.ObservableOnSubscribe;
-import io.reactivex.rxjava3.core.Observer;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
 
@@ -75,6 +77,7 @@ public class SecondFragment extends Fragment {
     private FragmentSecondBinding binding;
     private Book book;
     private Uri uri;
+    private PageTagViewModel pageTagViewModel;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState ) {
@@ -91,31 +94,24 @@ public class SecondFragment extends Fragment {
         book = rdb.bookDAO().getBookById(id);
         uri = Uri.parse(book.getUri());
 
-        setup();
+        setupPermisos();
 
         setupControlPlayer();
-        //ServiceTTS.getState();
+
         setupForeground(id);
 
-        View view = binding.getRoot();
-        return view;
-    }
+        initViewModels();
 
-    private void setupForeground(int id) {
-        Log.i(TAG, "setupForeground: ");
-        Intent serviceIntent = new Intent(getContext(), ServiceTTS.class);
-        serviceIntent.setAction(Utils.ACTION_START);
-        serviceIntent.putExtra("id", id);
-        ContextCompat.startForegroundService(getContext(), serviceIntent);
+        return binding.getRoot();
     }
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         getActionBarFromMainActivity().setTitle(book.getTitulo());
-        int page=book.getPageTag()+1;
-        getMainActivity().getActivityMainBinding().tvMainPageText.setText(String.valueOf(page));
-        binding.tvBookpdfPage.setText(String.valueOf(page));
+        //int page=book.getPageTagRead();
+        //getMainActivity().getActivityMainBinding().tvMainPageText.setText(String.valueOf(book.getPageTagRead()));
+        //binding.tvBookpdfPage.setText(String.valueOf(book.getPageTagRead()));
         binding.pdfView.fromUri(uri)
                 .spacing(10)
                 .defaultPage(book.getPageTag())
@@ -149,6 +145,8 @@ public class SecondFragment extends Fragment {
                     }
                 })
                 .load();
+        binding.tvBookpdfPage.setText(String.valueOf(binding.pdfView.getCurrentPage()));//try this
+
         getMainActivity().binding.flMainPageicon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -157,8 +155,11 @@ public class SecondFragment extends Fragment {
                 dialogoPageSpeech.setNoticeDialogListener(new DialogoPageSpeech.NoticeDialogListener() {
                     @Override
                     public void onDialogPositiveClick(int page) {
-                        book.setPageTag(page);
-                        rdb.bookDAO().updateBook(book);
+                        book.setPageTag(page);//todo:validar que page este en el rango de paginas del book
+                        if(rdb.bookDAO().updateBook(book)>0) {
+                            pageTagViewModel.setPageTag(book);
+                            setupForeground(book.getId());//algo pasa
+                        }
                     }
                 });
             }
@@ -175,7 +176,26 @@ public class SecondFragment extends Fragment {
         setHasOptionsMenu(true);
     }
 
+    private void setupForeground(int id) {
+        Log.i(TAG, "setupForeground: ");
+        Intent serviceIntent = new Intent(getContext(), ServiceTTS.class);
+        serviceIntent.setAction(Utils.ACTION_START);
+        serviceIntent.putExtra("id", id);
+        ContextCompat.startForegroundService(getContext(), serviceIntent);
+    }
 
+    public void initViewModels(){
+        pageTagViewModel = new ViewModelProvider(this).get(PageTagViewModel.class);
+        pageTagViewModel.getPageTag().observe(getViewLifecycleOwner(), new Observer<Book>() {
+            @Override
+            public void onChanged(Book book) {
+                //binding.tvBookpdfPage.setText(String.valueOf(book.getPageTagRead()));
+                getMainActivity().getActivityMainBinding().tvMainPageText.setText(String.valueOf(book.getPageTagRead()));
+            }
+        });
+        pageTagViewModel.setPageTag(book);
+
+    }
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
@@ -261,7 +281,7 @@ public class SecondFragment extends Fragment {
 
     }
 
-    private void setup() {
+    private void setupPermisos() {
         PDFBoxResourceLoader.init(getContext());
         // Need to ask for write permissions on SDK 23 and up, this is ignored on older versions
         if (ContextCompat.checkSelfPermission(getContext(),

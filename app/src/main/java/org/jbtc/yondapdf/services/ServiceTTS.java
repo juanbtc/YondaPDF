@@ -18,6 +18,9 @@ import android.widget.RemoteViews;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.room.Room;
 
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
@@ -29,6 +32,7 @@ import org.jbtc.yondapdf.R;
 import org.jbtc.yondapdf.Utils;
 import org.jbtc.yondapdf.database.RoomDatabaseBooksLN;
 import org.jbtc.yondapdf.entidad.Book;
+import org.jbtc.yondapdf.viewmodel.PageTagViewModel;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,6 +59,7 @@ public class ServiceTTS extends Service {
     private byte stateSpeak = Utils.STATE_NOT_INIT;
     private Disposable disposable;
     private String mAccion=Utils.ACTION_CLOSE;
+    private static PageTagViewModel pageTagViewModel;
 
     @Override
     public void onCreate() {
@@ -78,14 +83,11 @@ public class ServiceTTS extends Service {
             return START_NOT_STICKY;
         }
         String accion=intent.getAction();
-
         try{
             book = rdb.bookDAO().getBookById(intent.getExtras().getInt("id"));
             uri = Uri.parse(book.getUri());
         }catch (Exception e){}
-
         tomarAccion(accion,intent.getExtras());
-
         return START_NOT_STICKY;
     }
 
@@ -141,8 +143,8 @@ public class ServiceTTS extends Service {
             }
         }
     }
-
     //region controles
+
     private void speakBook(int numPage) {
         Log.i(TAG, "speakBook: num: " + numPage);
         Log.i(TAG, "speakBook: hilo: "+Thread.currentThread().getName());
@@ -217,7 +219,6 @@ public class ServiceTTS extends Service {
         }
         Log.i(TAG,"xxx ini next done");
     }
-
     private boolean stopSpeak(){
         Log.i(TAG, "stopSpeak: aver si esto es de tu talla");
         //**stadoSpeak= StadoSpeak.stoped;
@@ -230,6 +231,7 @@ public class ServiceTTS extends Service {
             return false;
         }
     }
+
     //endregion
 
     private Notification notificacion(String accion){
@@ -383,7 +385,6 @@ public class ServiceTTS extends Service {
             }
         };
     }
-
     public byte getStateSpeak() {
         return stateSpeak;
     }

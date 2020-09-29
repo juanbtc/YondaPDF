@@ -17,6 +17,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
+import androidx.navigation.ui.NavigationUI;
 import androidx.room.Room;
 
 import android.util.Log;
@@ -44,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
     //todo:layoutu notification
     //todo:image
     //todo:progresbar
+    //todo:click notification open book
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,8 +57,9 @@ public class MainActivity extends AppCompatActivity {
 
         //NavigationView navigationView = findViewById(R.id.nav_view);
         navController = Navigation.findNavController(this, R.id.nav_host_fragment);
-        //NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
+        NavigationUI.setupActionBarWithNavController(this, navController);
         //NavigationUI.setupWithNavController(navigationView, navController);
+
 
         rdb = Room.databaseBuilder(getApplicationContext(),
                 RoomDatabaseBooksLN.class, dbName)
@@ -133,6 +136,12 @@ public class MainActivity extends AppCompatActivity {
                 break;
             }
         }
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        navController.navigateUp();
+        return super.onSupportNavigateUp();
     }
 
     @Override
