@@ -18,13 +18,24 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:visibility="gone"/>
-        <ImageView
-            android:id="@+id/iv_card_page1"
+        <FrameLayout
             android:layout_width="70dp"
-            android:layout_height="100dp"
-            android:src="@mipmap/hgt"
-            android:scaleType="fitCenter"
-            android:adjustViewBounds="true" />
+            android:layout_height="100dp">
+            <ImageView
+                android:id="@+id/iv_card_page1"
+                android:layout_width="70dp"
+                android:layout_height="100dp"
+                android:src="@mipmap/hgt"
+                android:scaleType="fitCenter"
+                android:adjustViewBounds="true" />
+            <ProgressBar
+                android:id="@+id/pb_card_wait"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:progressTint="@color/colorPrimary"
+                android:visibility="gone"
+                android:layout_gravity="center"/>
+        </FrameLayout>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

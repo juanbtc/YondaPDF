@@ -23,6 +23,7 @@ import org.jbtc.yondapdf.R;
 import org.jbtc.yondapdf.database.RoomDatabaseBooksLN;
 import org.jbtc.yondapdf.entidad.Book;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -100,10 +101,22 @@ public class AdapterBook extends Adapter<AdapterBook.ViewHolderBook> implements 
     }
 
     public void deleteSelection(RoomDatabaseBooksLN rdb){
+        for(Book b:itemsSelected){
+            String dirFile = b.getBitmap();
+            if(rdb.bookDAO().delete(b)>0){
+                items.remove(b);
+                File png = new File(dirFile);
+                if(png.exists())
+                    png.delete();
+            }
+        }
+        notifyDataSetChanged();
+
+        /*
         if( rdb.bookDAO().deleteAll(itemsSelected)>0 ) {
             items.removeAll(itemsSelected);
             notifyDataSetChanged();
-        }
+        }*/
     }
 
     private void setChecked(ViewHolderBook holder,int position){

@@ -5,6 +5,8 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 
 import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
@@ -15,11 +17,13 @@ import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.os.EnvironmentCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.NavigationUI;
 import androidx.room.Room;
 
+import android.os.Environment;
 import android.util.Log;
 import android.util.TypedValue;
 
@@ -31,6 +35,10 @@ import android.widget.Toast;
 import org.jbtc.yondapdf.database.RoomDatabaseBooksLN;
 import org.jbtc.yondapdf.databinding.ActivityMainBinding;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.ClosedFileSystemException;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final String PRIMARY = "primary";
@@ -41,12 +49,13 @@ public class MainActivity extends AppCompatActivity {
     AssetManager assetManager;
     RoomDatabaseBooksLN rdb;
     ActivityMainBinding binding;
-    //todo:xjava
-    //todo:layoutu notification
-    //todo:image
-    //todo:progresbar
+
+    //todo:up muestra titulo firstfragment
     //todo:click notification open book
-    //todo:al dar click en play en fragmente q reabra el servicio si fue cerrado
+    //todo:configuraciones opciones
+    //todo:stop con sacudida
+    //todo:progresbar Cargar imagen
+    //todo:texto multiselect al eliminar
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,12 +65,10 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-
         //NavigationView navigationView = findViewById(R.id.nav_view);
         navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController);
         //NavigationUI.setupWithNavController(navigationView, navController);
-
 
         rdb = Room.databaseBuilder(getApplicationContext(),
                 RoomDatabaseBooksLN.class, dbName)
@@ -69,9 +76,57 @@ public class MainActivity extends AppCompatActivity {
                 .enableMultiInstanceInvalidation()
                 .build();
 
+        Log.i(TAG, "onCreate: info getApplicationInfo().dataDir "+getApplicationInfo().dataDir);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            Log.i(TAG, "onCreate: info getDataDir "+getDataDir().getAbsolutePath());
+        }
+        Log.i(TAG, "onCreate: info getFilesDir "+getFilesDir());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            Log.i(TAG, "onCreate: info getDataDir "+getDataDir());
+        }
+        Log.i(TAG, "onCreate: info getCacheDir "+getCacheDir().getAbsolutePath());
+        Log.i(TAG, "onCreate: info getExternalCacheDir "+getExternalCacheDir().getAbsolutePath());
+        Log.i(TAG, "onCreate: info getExternalStorageDirectory "+ Environment.getExternalStorageDirectory().getAbsolutePath());
+        try {
+            Log.i(TAG, "onCreate: info getExternalStorageDirectory getCanonicalPath :"+ Environment.getExternalStorageDirectory().getCanonicalPath());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Log.i(TAG, "onCreate: info getExternalStorageState "+ Environment.getExternalStorageState());
+
+        File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(getApplicationContext(), null);
+        for (File f:externalStorageVolumes) {
+            Log.i(TAG, "onCreate: volumenes : "+f);
+            Log.i(TAG, "onCreate: volumenes name: "+f.getName());
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                Log.i(TAG, "onCreate: volumenes O path: "+f.toPath().toString());
+                Log.i(TAG, "onCreate: volumenes O path root: "+f.toPath().getRoot().toString());
+            }
+            Log.i(TAG, "onCreate: volumenes : "+f.getAbsolutePath());
+        }
+        Log.i(TAG, "onCreate: getExternalStorageDirectory: "+Environment.getExternalStorageDirectory());
+        Log.i(TAG, "onCreate: getRootDirectory: "+Environment.getRootDirectory());
+        Log.i(TAG, "onCreate: getStorageDirectory: "+Environment.getStorageDirectory());
+        Log.i(TAG, "onCreate: getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS: "+Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS));
+
+        Log.i(TAG, "onCreate: try : "+new File("/storage").listFiles().toString());
+        File[]l=new File("/storage").listFiles();
+        for (File fl:l) {
+            Log.i(TAG, "onCreate: try 2 : " +fl);
+        }
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            Log.i(TAG, "onCreate: kojasdf: "+new File( getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS).getAbsolutePath() ).getAbsolutePath() );
+
+            for (File sdw:getExternalFilesDirs(Environment.DIRECTORY_PICTURES) ){
+                Log.i(TAG, "onCreate: lkñasdlkñl: : "+sdw);
+            }
+        }
+
+        Uri s=Uri.fromFile(new File("/storage/self"));
+        Log.i(TAG, "onCreate: URI: "+s.getPath()+" "+s.getHost()+" "+s.getPathSegments()+" "+s.getEncodedPath());
     }
-
-
 
 
     /*

@@ -77,7 +77,8 @@ public class FirstFragment extends Fragment {
             public void onClick(View view) {
                 //Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG).setAction("Action", null).show();
                 Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                intent.setType("*/*");
+                //intent.setType("*/*");
+                intent.setType("application/pdf");
                 intent.setAction(Intent.ACTION_OPEN_DOCUMENT);
                 startActivityForResult(intent, 1);
             }
@@ -258,6 +259,7 @@ public class FirstFragment extends Fragment {
                             public void subscribe(@io.reactivex.rxjava3.annotations.NonNull ObservableEmitter<Book> emitter) throws Throwable {
                                 try {
                                     Uri uri = resultData.getData();
+                                    Log.i(TAG, "subscribe: URI: "+uri.getPath()+" : "+uri.getEncodedPath()+" : "+uri.getPathSegments());
                                     final int takeFlags = resultData.getFlags()
                                             & (Intent.FLAG_GRANT_READ_URI_PERMISSION
                                             | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
@@ -283,22 +285,25 @@ public class FirstFragment extends Fragment {
 
     private Book createBookFromUri(Uri uri){
         Log.i(TAG, "createBookFromUri: Hilo: "+Thread.currentThread().getName());
+        File lk = new File(uri.toString());
+        Log.i(TAG, "createBookFromUri: Uri print path: "+lk.getAbsolutePath());
         int pages=0;
         String name = uri.getLastPathSegment();
         if(name.contains(":")){
             String [] nm = name.split(":");
             name = nm[nm.length-1];
-        }if(name.contains("/")){
+        }if(name.contains("/")){//obtego solo el nombre
             String [] nm = name.split("/");
             name = nm[nm.length-1];
         }
         //String bitmap="";
 
-        String pathDir = getActivity().getFilesDir()+"/png/";
+        //String pathDir = getActivity().getFilesDir()+"/png/";
+        String pathDir = Utils.getPathSDcard()+"/png/";
         String pathFile=pathDir+name.trim().replace(" ","_")+".png";
         File dir = new File(pathDir);if(!dir.exists())dir.mkdir();
         String path="";
-        try {
+        try {//creando imagen png del book
             InputStream i = getContext().getContentResolver().openInputStream(uri);
             PDDocument pdf = PDDocument.load(i);
             pages = pdf.getNumberOfPages();
@@ -307,13 +312,13 @@ public class FirstFragment extends Fragment {
 
             File file = new File(pathFile);
             OutputStream out = new FileOutputStream(file);
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 20, out);
             out.flush();
             out.close();
             path = file.getAbsolutePath();
         }catch (Exception e){e.printStackTrace();}
 
-        Log.i(TAG, "onActivityResult: file.getAbsolutePath()"+path);
+        Log.i(TAG, "onActivityResult: file.getAbsolutePath() "+path);
         Book b = new Book(uri.toString(),name,0,pages,path);
         return b;
     }

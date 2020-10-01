@@ -29,6 +29,7 @@ import com.tom_roush.pdfbox.text.PDFTextStripper;
 
 import org.jbtc.yondapdf.MainActivity;
 import org.jbtc.yondapdf.R;
+import org.jbtc.yondapdf.SecondFragment;
 import org.jbtc.yondapdf.Utils;
 import org.jbtc.yondapdf.database.RoomDatabaseBooksLN;
 import org.jbtc.yondapdf.entidad.Book;
@@ -56,10 +57,9 @@ public class ServiceTTS extends Service {
     private RoomDatabaseBooksLN rdb;
     private Book book;
     private Uri uri;
-    private byte stateSpeak = Utils.STATE_NOT_INIT;
+    public static byte stateSpeak = Utils.STATE_NOT_INIT;
     private Disposable disposable;
     private String mAccion=Utils.ACTION_CLOSE;
-    private static PageTagViewModel pageTagViewModel;
 
     @Override
     public void onCreate() {
@@ -83,10 +83,12 @@ public class ServiceTTS extends Service {
             return START_NOT_STICKY;
         }
         String accion=intent.getAction();
+        Log.i(TAG, "onStartCommand: Accion recibida: "+accion);
         try{
             book = rdb.bookDAO().getBookById(intent.getExtras().getInt("id"));
             uri = Uri.parse(book.getUri());
-        }catch (Exception e){}
+            Log.i(TAG, "onStartCommand: termino el try - id: "+intent.getExtras().getInt("id"));
+        }catch (Exception e){Log.e(TAG, "onStartCommand: error getbook");e.printStackTrace();}
         tomarAccion(accion,intent.getExtras());
         return START_NOT_STICKY;
     }
@@ -98,6 +100,7 @@ public class ServiceTTS extends Service {
             case Utils.ACTION_START:{
                 Log.i(TAG, "ACTION_START Received start Intent ");
                 //mStateService = Statics.STATE_SERVICE.PREPARE;
+                stateSpeak = Utils.STATE_STOPED;
                 startForeground(Utils.NOTIFICATION_ID_FOREGROUND_SERVICE, notificacion(accion));
                 //destroyPlayer();
                 //initPlayer();
@@ -132,9 +135,9 @@ public class ServiceTTS extends Service {
             }
             case Utils.ACTION_CLOSE:{
                 //startForeground(Utils.NOTIFICATION_ID_FOREGROUND_SERVICE, notificacion());
-                stopSpeak();
-                //textToSpeech.shutdown();//todo:agregar esto a stopSpeak
+                //stopSpeak();
                 stopForeground(true);
+                stateSpeak=Utils.STATE_NOT_INIT;
                 stopSelf();
                 break;
             }
@@ -185,7 +188,7 @@ public class ServiceTTS extends Service {
             Log.i(TAG, "speakTxtNumPage: resultado speak "+r);
             //if( r==0 )stateSpeak = Utils.STATE_PLAYING; boorar xq ya lo ago en onStart
         }else {
-            //todo:agregar esto para version previas a lolipop
+            //tod0:agregar esto para version previas a lolipop
             int r=textToSpeech.speak(txt, TextToSpeech.QUEUE_FLUSH, null);
             Log.i(TAG, "speakTxtNumPage: resultado speak deprecated "+r);
             //if ( r==0 )stateSpeak = Utils.STATE_PLAYING;
@@ -200,11 +203,11 @@ public class ServiceTTS extends Service {
 
     public void prev(){
          book.decPageTag1();
-        //todo:validar in<pages
-        rdb.bookDAO().updateBook(book);
-        if(book.getPageTag()>=0) {
-            speakBook(book.getPageTagRead());
-            //startForeground(Utils.NOTIFICATION_ID_FOREGROUND_SERVICE,notificacion(Utils.ACTION_PLAY));
+        if(rdb.bookDAO().updateBook(book)>0) {
+            if (book.getPageTag() >= 0) {
+                speakBook(book.getPageTagRead());
+                //startForeground(Utils.NOTIFICATION_ID_FOREGROUND_SERVICE,notificacion(Utils.ACTION_PLAY));
+            }
         }
         Log.i(TAG," ini prev done");
     }
@@ -219,6 +222,7 @@ public class ServiceTTS extends Service {
         }
         Log.i(TAG,"xxx ini next done");
     }
+
     private boolean stopSpeak(){
         Log.i(TAG, "stopSpeak: aver si esto es de tu talla");
         //**stadoSpeak= StadoSpeak.stoped;
@@ -364,13 +368,19 @@ public class ServiceTTS extends Service {
             public void onStart(String s) {
                 Log.i(TAG," onStart");
                 stateSpeak = Utils.STATE_PLAYING;
-                /*todo:actualizar UI
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        getMainActivity().getActivityMainBinding().btAppbarBotpage.setText(String.valueOf(book.getPageTag()+1));
-                    }
-                });*/
+                try{
+                    Log.i(TAG, "onStart: Si es secondfragment");
+                    //((SecondFragment)getBaseContext()).updatesUIPageTagNoService();
+                }catch (Exception e){
+                    Log.i(TAG, "onStart: NO es secondfragment");
+                }
+                //todo:actualizar UI
+                Intent intent1 = new Intent();
+                intent1.setAction("yondapdf.pagetag.changed");
+                intent1.putExtra("todo", "update");
+                Log.i(TAG, "onStart: enviando broadcast");
+                sendBroadcast(intent1);
+
             }
             @Override
             public void onDone(String s) {
@@ -388,6 +398,7 @@ public class ServiceTTS extends Service {
     public byte getStateSpeak() {
         return stateSpeak;
     }
+
 
     @Override
     public void onDestroy() {

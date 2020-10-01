@@ -4,31 +4,62 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_gravity="center"
     android:orientation="vertical">
 
-    <com.google.android.material.textfield.TextInputLayout
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
+        android:layout_marginLeft="10dp"
         android:layout_marginVertical="10dp"
-        android:layout_marginHorizontal="30dp"
-        android:hint="Pagina">
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/tiet_dialog_pagetext"
-            android:layout_width="80dp"
-            android:layout_height="wrap_content"
-            android:inputType="number"
-            android:backgroundTint="#ffffff"/>
-    </com.google.android.material.textfield.TextInputLayout>
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:text="Numero de Pagina"/>
 
-    <Button
-        android:id="@+id/bt_dialog_ok"
-        android:layout_width="wrap_content"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/outlinedTextField"
+        android:layout_width="120dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginHorizontal="20dp"
-        android:text="ok"
-        app:iconSize="20dp"/>
+        android:layout_margin="20dp"
+        android:hint="numero"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/tiet_dialog_pagetext"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        android:id="@+id/tv_dialog_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:text="Paginas 1 a 250"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/bt_dialog_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="Cancel"
+            style="@style/Widget.MaterialComponents.Button.TextButton"/>
+        <Button
+            android:id="@+id/bt_dialog_ok"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="ok"
+            style="@style/Widget.MaterialComponents.Button.TextButton"/>
+    </LinearLayout>
 
 
 </LinearLayout>

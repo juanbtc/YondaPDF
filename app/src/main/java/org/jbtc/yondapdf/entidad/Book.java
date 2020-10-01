@@ -86,7 +86,18 @@ public class Book {
     }
 
     public void setPageTag(int pageTag) {
-        this.pageTag = pageTag;
+        //if(0<=pageTag&&pageTag<pages) {
+            this.pageTag = pageTag;
+        //}
+    }
+
+    public boolean setPageTagValidate(int pageTag) {
+        if(0<=pageTag&&pageTag<pages) {
+            this.pageTag = pageTag;
+            return true;
+        }else{
+            return false;
+        }
     }
 
     public int getId() {

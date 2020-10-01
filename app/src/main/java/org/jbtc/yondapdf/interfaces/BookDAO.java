@@ -34,7 +34,7 @@ public interface BookDAO {
     int updateBook(Book book);
 
     @Delete
-    void delete(Book book);
+    int delete(Book book);
 
     @Delete
     int deleteAll(List<Book> books);

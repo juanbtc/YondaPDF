@@ -3,8 +3,10 @@ package org.jbtc.yondapdf;
 import android.Manifest;
 import android.app.Notification;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.RestrictionEntry;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
@@ -20,17 +22,21 @@ import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.util.Base64;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.DialogCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
@@ -78,6 +84,7 @@ public class SecondFragment extends Fragment {
     private Book book;
     private Uri uri;
     private PageTagViewModel pageTagViewModel;
+    private BroadcastRecibido broadcastRecibido;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState ) {
@@ -93,6 +100,8 @@ public class SecondFragment extends Fragment {
         int id = getArguments().getInt("id");
         book = rdb.bookDAO().getBookById(id);
         uri = Uri.parse(book.getUri());
+
+        broadcastRecibido = new BroadcastRecibido();
 
         setupPermisos();
 
@@ -119,10 +128,13 @@ public class SecondFragment extends Fragment {
                     @Override
                     public boolean onTap(MotionEvent e) {
                         Log.i(TAG, "onTap: Entro a hablar");
-                        book.setPageTag(binding.pdfView.getCurrentPage());
-                        rdb.bookDAO().updateBook(book);
-                        //speakBook(book.getPageTag()+1);
+                        if(book.setPageTagValidate(binding.pdfView.getCurrentPage())) {
+                            rdb.bookDAO().updateBook(book);
+                            //speakBook(book.getPageTag()+1);
+                            updatesUIPageTag();
+                        }
                         return true;
+
                     }
                 })
                 .onPageChange(new OnPageChangeListener() {
@@ -145,25 +157,25 @@ public class SecondFragment extends Fragment {
                     }
                 })
                 .load();
-        //todo:eliminar imagen de la db
         //binding.pdfView.setKeepScreenOn(true);//tal vez
         binding.tvBookpdfPage.setText(String.valueOf(binding.pdfView.getCurrentPage()));//try this
 
         getMainActivity().binding.flMainPageicon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                DialogoPageSpeech dialogoPageSpeech = new DialogoPageSpeech();
+                DialogoPageSpeech dialogoPageSpeech = new DialogoPageSpeech(book);
                 dialogoPageSpeech.show(getParentFragmentManager(),DialogoPageSpeech.tag);
                 dialogoPageSpeech.setNoticeDialogListener(new DialogoPageSpeech.NoticeDialogListener() {
                     @Override
                     public void onDialogPositiveClick(int page) {
-                        book.setPageTag(page);//todo:validar que page este en el rango de paginas del book
-                        if(rdb.bookDAO().updateBook(book)>0) {
-                            pageTagViewModel.setPageTag(book);
-                            setupForeground(book.getId());//algo pasa
+                        if(book.setPageTagValidate(page)){//tod0:validar que page este en el rango de paginas del book
+                            if (rdb.bookDAO().updateBook(book)>0) {//ya esta validado en el dialog pero x si acaso lo dejo
+                                updatesUIPageTag();
+                            }
                         }
                     }
                 });
+
             }
         });
         binding.tvBookpdfPage.setOnClickListener(new View.OnClickListener() {
@@ -183,7 +195,20 @@ public class SecondFragment extends Fragment {
         Intent serviceIntent = new Intent(getContext(), ServiceTTS.class);
         serviceIntent.setAction(Utils.ACTION_START);
         serviceIntent.putExtra("id", id);
+        Log.i(TAG, "setupForeground: id: "+id);
         ContextCompat.startForegroundService(getContext(), serviceIntent);
+    }
+
+    private void updatesUIPageTag(){
+        pageTagViewModel.setPageTag(book);
+        setupForeground(book.getId());//algo pasa
+    }
+
+    public void updatesUIPageTagNoService(){
+        Log.i(TAG, "updatesUIPageTagNoService: tag = "+book.getPageTag());
+        book = rdb.bookDAO().getBookById(book.getId());
+        Log.i(TAG, "updatesUIPageTagNoService: tag = "+book.getPageTag());
+        pageTagViewModel.setPageTag(book);
     }
 
     public void initViewModels(){
@@ -233,51 +258,68 @@ public class SecondFragment extends Fragment {
         binding.btSecPrev.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //prev();
-                Intent IPrevIntent = new Intent(getContext(), ServiceTTS.class);
-                IPrevIntent.setAction(Utils.ACTION_PREV);
-                //PendingIntent IPendingPrevIntent = PendingIntent.getService(getContext(), 0, IPrevIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                ContextCompat.startForegroundService(getContext(), IPrevIntent);
+                if(ServiceTTS.stateSpeak==Utils.STATE_NOT_INIT) {
+                    Log.i(TAG, "onClick: setup control player entro a state_not_init");
+                    setupForeground(book.getId());
+
+                    Intent IPrevIntent = new Intent(getContext(), ServiceTTS.class);
+                    IPrevIntent.setAction(Utils.ACTION_PREV);
+                    ContextCompat.startForegroundService(getContext(), IPrevIntent);
+                }else{
+                    Log.i(TAG, "onClick: servicio ya iniciado player no entro a state_not_init");
+                    Intent IPrevIntent = new Intent(getContext(), ServiceTTS.class);
+                    IPrevIntent.setAction(Utils.ACTION_PREV);
+                    ContextCompat.startForegroundService(getContext(), IPrevIntent);
+                }
             }
         });
         binding.btSecPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //speakBook(book.getPageTag()+1);
-                Intent IPlayIntent = new Intent(getContext(), ServiceTTS.class);
-                IPlayIntent.setAction(Utils.ACTION_PLAY);
-                //PendingIntent IPendingPlayIntent = PendingIntent.getService(getContext(), 0, IPlayIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                ContextCompat.startForegroundService(getContext(), IPlayIntent);
+                Log.i(TAG, "onClick: play status service:"+ServiceTTS.stateSpeak);
+                if(ServiceTTS.stateSpeak==Utils.STATE_NOT_INIT) {
+                    Log.i(TAG, "onClick: setup control player entro a state_not_init");
+                    setupForeground(book.getId());
+
+                    Intent IPlayIntent = new Intent(getContext(), ServiceTTS.class);
+                    IPlayIntent.setAction(Utils.ACTION_PLAY);
+                    ContextCompat.startForegroundService(getContext(), IPlayIntent);
+                }else {
+                    Log.i(TAG, "onClick: status services distinto de init");
+                    Intent IPlayIntent = new Intent(getContext(), ServiceTTS.class);
+                    IPlayIntent.setAction(Utils.ACTION_PLAY);
+                    ContextCompat.startForegroundService(getContext(), IPlayIntent);
+                }
             }
         });
-        /*binding.btSecPause.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //stopSpeak();
-                Intent IPauseIntent = new Intent(getContext(), ServiceTTS.class);
-                IPauseIntent.setAction(Utils.ACTION_PAUSE);
-                //PendingIntent IPendingPauseIntent = PendingIntent.getService(getContext(), 0, IPauseIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                ContextCompat.startForegroundService(getContext(), IPauseIntent);
-            }
-        });*/
         binding.btSecStop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //stopSpeak();
-                Intent IStopIntent = new Intent(getContext(), ServiceTTS.class);
-                IStopIntent.setAction(Utils.ACTION_STOP);
-                //PendingIntent IPendingStopIntent = PendingIntent.getService(getContext(), 0, IStopIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                ContextCompat.startForegroundService(getContext(), IStopIntent);
+                if(ServiceTTS.stateSpeak==Utils.STATE_NOT_INIT) {
+                    Log.i(TAG, "onClick: setup control player entro a state_not_init");
+                    setupForeground(book.getId());
+                }else {
+                    Intent IStopIntent = new Intent(getContext(), ServiceTTS.class);
+                    IStopIntent.setAction(Utils.ACTION_STOP);
+                    ContextCompat.startForegroundService(getContext(), IStopIntent);
+                }
             }
         });
         binding.btSecNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //next();
-                Intent INextIntent = new Intent(getContext(), ServiceTTS.class);
-                INextIntent.setAction(Utils.ACTION_NEX);
-                //PendingIntent IPendingNextIntent = PendingIntent.getService(getContext(), 0, INextIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                ContextCompat.startForegroundService(getContext(), INextIntent);
+                if(ServiceTTS.stateSpeak==Utils.STATE_NOT_INIT) {
+                    Log.i(TAG, "onClick: setup control player entro a state_not_init");
+                    setupForeground(book.getId());
+
+                    Intent INextIntent = new Intent(getContext(), ServiceTTS.class);
+                    INextIntent.setAction(Utils.ACTION_NEX);
+                    ContextCompat.startForegroundService(getContext(), INextIntent);
+                }else {
+                    Intent INextIntent = new Intent(getContext(), ServiceTTS.class);
+                    INextIntent.setAction(Utils.ACTION_NEX);
+                    ContextCompat.startForegroundService(getContext(), INextIntent);
+                }
             }
         });
 
@@ -295,12 +337,48 @@ public class SecondFragment extends Fragment {
     }
 
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction("yondapdf.pagetag.changed");
+        getContext().registerReceiver(broadcastRecibido, intentFilter);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if(broadcastRecibido!=null) {//no es necesario
+            getContext().unregisterReceiver(broadcastRecibido);
+        }
+    }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         binding = null;
         //disposable.dispose();
+    }
+
+    private class BroadcastRecibido extends BroadcastReceiver{
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.i(TAG, "onReceive: ");
+            String accion = intent.getAction();
+            if(intent.getExtras().getString("todo")!=null) {
+                Log.i(TAG, "onReceive: entro get estras");
+                String todo = intent.getExtras().getString("todo");
+                switch (todo) {
+                    case "update": {
+                        Log.i(TAG, "onReceive: update");
+                        updatesUIPageTagNoService();
+                        break;
+                    }
+                }
+            }
+
+        }
     }
 
 }
