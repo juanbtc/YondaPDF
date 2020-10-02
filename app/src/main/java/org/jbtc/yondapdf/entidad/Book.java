@@ -86,9 +86,7 @@ public class Book {
     }
 
     public void setPageTag(int pageTag) {
-        //if(0<=pageTag&&pageTag<pages) {
             this.pageTag = pageTag;
-        //}
     }
 
     public boolean setPageTagValidate(int pageTag) {
@@ -123,11 +121,6 @@ public class Book {
     public void setTitulo(String titulo) {
         this.titulo = titulo;
     }
-
-    /*
-    public boolean isUnfinished(){
-        return pageTag<pages;
-    }*/
 
     @Ignore
     public void decPageTag1() {

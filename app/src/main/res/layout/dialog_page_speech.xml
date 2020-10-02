@@ -7,6 +7,8 @@
     android:layout_gravity="center"
     android:orientation="vertical">
 
+
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -14,24 +16,36 @@
         android:layout_marginVertical="10dp"
         android:textStyle="bold"
         android:textSize="16sp"
-        android:text="Numero de Pagina"/>
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/outlinedTextField"
-        android:layout_width="120dp"
+        android:text="Tag numero de Pagina"/>
+    <LinearLayout
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_margin="20dp"
-        android:hint="numero"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        android:gravity="center_vertical"
+        android:layout_gravity="center"
+        android:orientation="horizontal">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/tiet_dialog_pagetext"
-            android:layout_width="match_parent"
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center_vertical"
+            android:src="@drawable/ic_tag"/>
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/outlinedTextField"
+            android:layout_width="120dp"
             android:layout_height="wrap_content"
-            android:inputType="number" />
+            android:layout_gravity="center"
+            android:layout_margin="20dp"
+            android:hint="numero"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
-    </com.google.android.material.textfield.TextInputLayout>
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/tiet_dialog_pagetext"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+    </LinearLayout>
 
     <TextView
         android:id="@+id/tv_dialog_message"

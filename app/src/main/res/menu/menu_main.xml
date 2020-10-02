@@ -15,9 +15,6 @@
         android:id="@+id/action_selection"
         android:orderInCategory="120"
         android:title="Seleccionar" />
-    <item
-        android:id="@+id/action_config"
-        android:orderInCategory="130"
-        android:title="configuracion" />
+
 
 </menu>

@@ -1,6 +1,5 @@
 package org.jbtc.yondapdf.adapter;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
@@ -67,12 +66,10 @@ public class AdapterBook extends Adapter<AdapterBook.ViewHolderBook> implements 
             @Override
             public void onClick(View view) {
                 if (getFirstFragment().isActionModeActive()) {
-                    Log.i(TAG, "onClick: 7854 card checked: "+items.get(position).isChecked());
-                    //holder.cbSelect.setVisibility(View.VISIBLE);
                     setChecked(holder,position);
+                    if(oCvListener!=null)oCvListener.OnClickCardViewCountSelected(itemsSelected.size());
                 }else {
-                    //holder.cbSelect.setVisibility(View.GONE);
-                    if (oCvListener != null) oCvListener.OnClickCardView(items.get(position));//habre el PDF
+                    if (oCvListener != null) oCvListener.OnClickCardView(items.get(position));
                 }
             }
         });
@@ -81,11 +78,8 @@ public class AdapterBook extends Adapter<AdapterBook.ViewHolderBook> implements 
             public boolean onLongClick(View view) {
                 if (!getFirstFragment().isActionModeActive()) {
                     if (oCvListener != null) {
-                        Log.i(TAG, "onClick: 7855 card long checked: " + items.get(position).isChecked());
-                        oCvListener.OnLongClickCardView();//activa el actionMode
-                        //holder.cbSelect.setVisibility(View.VISIBLE);
                         setChecked(holder, position);
-                        //notifyDataSetChanged();
+                        oCvListener.OnLongClickCardView(itemsSelected.size());
                         return true;
                     }
                 }
@@ -111,12 +105,6 @@ public class AdapterBook extends Adapter<AdapterBook.ViewHolderBook> implements 
             }
         }
         notifyDataSetChanged();
-
-        /*
-        if( rdb.bookDAO().deleteAll(itemsSelected)>0 ) {
-            items.removeAll(itemsSelected);
-            notifyDataSetChanged();
-        }*/
     }
 
     private void setChecked(ViewHolderBook holder,int position){
@@ -132,7 +120,7 @@ public class AdapterBook extends Adapter<AdapterBook.ViewHolderBook> implements 
     }
 
     public void cleanItemsSelected(){
-        Log.i(TAG, "cleanItemsSelected: Limpiado");
+        Log.i(TAG, "cleanItemsSelected: Limpiando");
         for(Book book:items) {
             book.setChecked(false);
         }
@@ -165,7 +153,6 @@ public class AdapterBook extends Adapter<AdapterBook.ViewHolderBook> implements 
     private Filter filtro = new Filter() {
         @Override
         protected FilterResults performFiltering(CharSequence query) {
-            //List<Book> itemsCopy = new ArrayList<>(items);
             List<Book> itemResult=new ArrayList<Book>();
             if(query==null||query.length()<1){
                 itemResult.addAll(items);
@@ -197,7 +184,8 @@ public class AdapterBook extends Adapter<AdapterBook.ViewHolderBook> implements 
         private TextView tvTag;
         private ImageView ivBitmap;
         private CheckBox cbSelect;
-        View v;
+        private View v;
+
         public ViewHolderBook(View v) {
             super(v);
             tvName = v.findViewById(R.id.tv_book_name);
@@ -211,7 +199,8 @@ public class AdapterBook extends Adapter<AdapterBook.ViewHolderBook> implements 
 
     public interface OnClickCardViewListener{
         public void OnClickCardView(Book book);
-        public void OnLongClickCardView();
+        public void OnClickCardViewCountSelected(int countSelected);
+        public void OnLongClickCardView(int countSelected);
     }
     OnClickCardViewListener oCvListener;
     public void setOnClickVListener(OnClickCardViewListener oCvListener) {
