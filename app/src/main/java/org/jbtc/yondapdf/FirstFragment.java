@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
 
+import com.google.android.gms.ads.AdRequest;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.rendering.PDFRenderer;
 
@@ -76,6 +77,9 @@ public class FirstFragment extends Fragment {
                 startActivityForResult(intent, 1);
             }
         });
+
+        AdRequest adRequest = new AdRequest.Builder().build();
+        binding.adView.loadAd(adRequest);
 
         getMainActivity().setActionBarTille(getResources().getString(R.string.app_name));
 
