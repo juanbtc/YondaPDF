@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="70dp"
+    android:orientation="vertical">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/colorPrimary"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+        <FrameLayout
+            android:id="@+id/fl_notif_pageicon"
+            android:layout_width="60dp"
+            android:layout_height="60dp">
+            <ImageView
+                android:id="@+id/iv_notif_botpage"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:background="@drawable/ic_botspeak___master" />
+            <TextView
+                android:id="@+id/tv_notif_page_text"
+                android:gravity="center"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:paddingTop="23dp"
+                android:textSize="10sp"
+                android:textColor="#000000"
+                android:text="654321"/>
+        </FrameLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/tv_notif_titulo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingVertical="1dp"
+                android:textAlignment="center"
+                android:text="Nombre titulo"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="horizontal">
+                <LinearLayout
+                    android:layout_weight="1"
+                    android:layout_width="1dp"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+                    <Button
+                        android:id="@+id/bt_notif_prev"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/ic_skip_previous_black_18dp"
+                        app:backgroundTint="@color/button_control_effect" />
+                    <FrameLayout
+                        android:layout_width="40dp"
+                        android:layout_height="40dp">
+                        <Button
+                            android:id="@+id/bt_notif_play"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:background="@drawable/ic_play_circle_filled_black_18dp"
+                            app:backgroundTint="@color/button_control_effect" />
+                        <ProgressBar
+                            android:id="@+id/pb_notif_wait"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:progressTint="@color/colorPrimaryDark"
+                            android:visibility="visible"
+                            android:layout_gravity="center"/>
+                    </FrameLayout>
+                    <Button
+                        android:id="@+id/bt_notif_stop"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/ic_stop_circle_black_18dp"
+                        app:backgroundTint="@color/button_control_effect" />
+                    <Button
+                        android:id="@+id/bt_notif_next"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/ic_skip_next_black_18dp"
+                        app:backgroundTint="@color/button_control_effect" />
+                </LinearLayout>
+                <Button
+                    android:id="@+id/bt_notif_close"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/ic_cancel_black_18dp" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>
