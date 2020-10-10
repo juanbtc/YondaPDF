@@ -1,6 +1,9 @@
 package org.jbtc.yondapdf.services;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
@@ -43,7 +46,9 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class ServiceTTS extends Service {
 
-    private static final String CHANNEL_ID = "canaltts";
+    private static final String CHANNEL_ID = "canaltts_id";
+    //private final static String FOREGROUND_CHANNEL_ID = "fgchannel_tts_id";
+    private NotificationManager mNotificationManager;
     private static final String TAG = "sTTS";
     private TextToSpeech textToSpeech;
     private RoomDatabaseBooksLN rdb;
@@ -56,11 +61,13 @@ public class ServiceTTS extends Service {
     @Override
     public void onCreate() {
         Log.i(TAG, "onCreate: eco");
+        mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         rdb = Room.databaseBuilder(getApplicationContext(),
                 RoomDatabaseBooksLN.class, Utils.dbName)
                 .allowMainThreadQueries()
                 .enableMultiInstanceInvalidation()
                 .build();
+        Log.i(TAG, "onCreate: Default vois: "+Locale.getDefault().getLanguage()+" - "+Locale.getDefault().toString());
         textToSpeech  =new TextToSpeech(getApplicationContext(),getOnIntListener());
         textToSpeech.setOnUtteranceProgressListener(getUtteranceProgressListener());
         super.onCreate();
@@ -204,7 +211,17 @@ public class ServiceTTS extends Service {
 
     //endregion
 
+    @SuppressLint("WrongConstant")
     private Notification notificacion(String accion){
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O && mNotificationManager.getNotificationChannel(CHANNEL_ID) == null) {
+            // The user-visible name of the channel.
+            CharSequence name = getString(R.string.text_notification);
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel mChannel = new NotificationChannel(CHANNEL_ID, name, importance);
+            mChannel.enableVibration(false);
+            mNotificationManager.createNotificationChannel(mChannel);
+        }
+
         Intent notificationIntent = new Intent(this, MainActivity.class);
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
             notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -254,18 +271,28 @@ public class ServiceTTS extends Service {
         remoteViews_NotificationLayout.setOnClickPendingIntent(R.id.bt_notif_next, IPendingNextIntent);
         remoteViews_NotificationLayout.setOnClickPendingIntent(R.id.bt_notif_close, IPendingCloseIntent);
 
-        Notification notification;
+        NotificationCompat.Builder notificationCompatBuilder;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            notificationCompatBuilder = new NotificationCompat.Builder(this, CHANNEL_ID);
+        } else {
+            notificationCompatBuilder = new NotificationCompat.Builder(this);
+        }
+
+        //Notification notification;
 
 
-        notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+        notificationCompatBuilder
                 .setContentTitle("Example Service")
                 .setContentText("Texto")
                 .setSmallIcon(R.drawable.ic_botspeak___master)
                 .setContentIntent(pendingIntent)
                 .setCustomContentView(remoteViews_NotificationLayout)
                 .build();
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            notificationCompatBuilder.setVisibility(Notification.VISIBILITY_PUBLIC);
+        }
 
-        return notification;
+        return notificationCompatBuilder.build();
     }
 
     private String stripText(InputStream pdfInputStream, int page) {

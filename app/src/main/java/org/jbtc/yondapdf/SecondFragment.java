@@ -51,14 +51,15 @@ public class SecondFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState ) {
         // Inflate the layout for this fragment
+        Log.i(TAG, "onCreateView: entro");
         binding = FragmentSecondBinding.inflate(inflater, container, false);
-
+        
         rdb = Room.databaseBuilder(getContext(),
                 RoomDatabaseBooksLN.class, Utils.dbName)
                 .allowMainThreadQueries()
                 .enableMultiInstanceInvalidation()
                 .build();
-
+        
         int id = getArguments().getInt("id");
         book = rdb.bookDAO().getBookById(id);
         uri = Uri.parse(book.getUri());
