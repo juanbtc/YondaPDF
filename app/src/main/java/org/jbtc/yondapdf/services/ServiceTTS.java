@@ -46,7 +46,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class ServiceTTS extends Service {
 
-    private static final String CHANNEL_ID = "canaltts_id";
+    private static final String CHANNEL_ID = "id_canal_tts";
     //private final static String FOREGROUND_CHANNEL_ID = "fgchannel_tts_id";
     private NotificationManager mNotificationManager;
     private static final String TAG = "sTTS";
@@ -216,9 +216,10 @@ public class ServiceTTS extends Service {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O && mNotificationManager.getNotificationChannel(CHANNEL_ID) == null) {
             // The user-visible name of the channel.
             CharSequence name = getString(R.string.text_notification);
-            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            int importance = NotificationManager.IMPORTANCE_LOW;
             NotificationChannel mChannel = new NotificationChannel(CHANNEL_ID, name, importance);
             mChannel.enableVibration(false);
+            //mChannel.setSound(null, null);
             mNotificationManager.createNotificationChannel(mChannel);
         }
 
