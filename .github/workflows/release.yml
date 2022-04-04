@@ -37,9 +37,9 @@ jobs:
         keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}       
         keyPassword: ${{ secrets.KEY_PASSWORD }}
         
-    # Reporting and Services Publishing added and package fixed
+    # testing v1.0.15
     - name: Deploy to Play Store  -3
-      uses: r0adkll/upload-google-play@v1
+      uses: r0adkll/upload-google-play@v1.0.15
       with:
         serviceAccountJsonPlainText: ${{secrets.SERVICE_ACCOUNT}}
         packageName: org.jbtc.yondapdf
