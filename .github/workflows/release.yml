@@ -37,7 +37,7 @@ jobs:
         keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}       
         keyPassword: ${{ secrets.KEY_PASSWORD }}
         
-    # testing v1.0.15
+    # testing v1.0.15 //2do intento
     - name: Deploy to Play Store  -3
       uses: r0adkll/upload-google-play@v1.0.15
       with:
