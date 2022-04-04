@@ -37,7 +37,7 @@ jobs:
         keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}       
         keyPassword: ${{ secrets.KEY_PASSWORD }}
         
-    # App agregada al permiso
+    # Todos los permisos
     - name: Deploy to Play Store  -3
       uses: r0adkll/upload-google-play@v1
       with:
